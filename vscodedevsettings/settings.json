@@ -1,0 +1,130 @@
+{
+  "editor.fontFamily": "'SourceCodePro-Regular',Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.fontFamily": "'SourceCodePro-Regular',Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.profiles.osx": {
+    "zsh": {
+      "path": "zsh",
+      "args": ["-l"]
+    },
+    "tmux": {
+      "path": "tmux",
+      "icon": "terminal-tmux"
+    }
+  },
+  "workbench.editor.enablePreview": false,
+  "terminal.integrated.inheritEnv": true,
+  "window.titleBarStyle": "custom",
+  "editor.wordWrap": "on",
+  "workbench.colorCustomizations": {
+    "minimap.background": "#00002299"
+  },
+  "workbench.colorTheme": "Atom One Dark",
+  "editor.fontSize": 13,
+  "debug.console.fontSize": 13,
+  "terminal.integrated.fontSize": 13,
+  "workbench.iconTheme": "vscode-icons",
+  "workbench.startupEditor": "newUntitledFile",
+  "terminal.integrated.tabs.location": "left",
+
+  "bookmarks.saveBookmarksInProject": true,
+  "bookmarks.useWorkaroundForFormatters": true,
+  "bookmarks.experimental.enableNewStickyEngine": true,
+  "bookmarks.keepBookmarksOnLineDelete": true,
+
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "workbench.editor.untitled.hint": "hidden",
+  "editor.semanticHighlighting.enabled": true,
+  "security.workspace.trust.untrustedFiles": "open",
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.hg/store/**": true,
+    "**/.svn": true
+  },
+  "markdown.marp.exportType": "pptx",
+  "terminal.integrated.defaultProfile.windows": "powershell.exe",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  // 文件路径自动补全插件
+  "path-intellisense.extensionOnImport": true,
+  "path-intellisense.showHiddenFiles": true,
+  "path-intellisense.absolutePathToWorkspace": true,
+  // 开发配置
+  // 代码自动格式化配置
+  "editor.formatOnSave": true,
+  "prettier.useTabs": false,
+  "prettier.tabWidth": 2,
+  "prettier.endOfLine": "lf",
+  "[shellscript]": {
+    "files.eol": "\n"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+    "editor.formatOnSave": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.suggest.insertMode": "replace"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "keep",
+    "editor.quickSuggestions": {
+      "other": true,
+      "comments": true,
+      "strings": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // git 配置
+  "git.ignoreLegacyWarning": true,
+  "git.allowForcePush": false,
+  "git.autofetch": "all",
+  // golang 配置
+  "go.useLanguageServer": true,
+  "go.toolsManagement.autoUpdate": true,
+  "go.autocompleteUnimportedPackages": true,
+  // python 配置
+  "python.languageServer": "Pylance",
+  // java 配置
+  "java.import.generatesMetadataFilesAtProjectRoot": true,
+  "java.project.importOnFirstTimeStartup": "automatic",
+  "maven.executable.options": "-DskipTests",
+  "maven.terminal.useJavaHome": true,
+  "java.project.referencedLibraries": ["lib/**/*.jar"],
+  // "remote.SSH.remotePlatform": {
+  //   "192.168.188.156": "linux"
+  // },
+  // CMake 配置
+  "cmake.configureOnOpen": true,
+
+  "redhat.telemetry.enabled": false,
+  "Lua.telemetry.enable": false,
+  "sourcegraph.accessToken": "4851cc896ed197eac85e71af9483bf9a7d698ad4",
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "DotJoshJohnson.xml"
+  },
+  "terminal.integrated.tabs.description": "${task}${separator}${local}${separator}${process}"
+}

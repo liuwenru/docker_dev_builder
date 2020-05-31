@@ -1,0 +1,84 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  //常用应用变量说明 , 举例说明 文本编辑器中打开/home/your-username/your-project/folder/file.ext  workspace为 /home/your-username/your-project
+  // ${userHome} - the path of the user's home folder                /home/your-username
+  // ${workspaceFolder} - the path of the folder opened in VS Code   /home/your-username/your-project
+  // ${workspaceFolderBasename} - the name of the folder opened in VS Code without any slashes (/) your-project
+  // ${file} - the current opened file                                      /home/your-username/your-project/folder/file.ext
+  // ${fileWorkspaceFolder} - the current opened file's workspace folder    /home/your-username/your-project
+  // ${relativeFile} - the current opened file relative to workspaceFolder  folder/file.ext
+  // ${relativeFileDirname} - the current opened file's dirname relative to workspaceFolder  folder
+  // ${fileBasename} - the current opened file's basename                   file.ext
+  // ${fileBasenameNoExtension} - the current opened file's basename with no file extension  file
+  // ${fileDirname} - the current opened file's dirname                                     /home/your-username/your-project/folder
+  // ${fileExtname} - the current opened file's extension                                   .ext
+  // ${cwd} - the task runner's current working directory upon the startup of VS Code
+  // ${lineNumber} - the current selected line number in the active file
+  // ${selectedText} - the current selected text in the active file
+  // ${execPath} - the path to the running VS Code executable
+  // ${defaultBuildTask} - the name of the default build task
+  // ${pathSeparator} - the character used by the operating system to separate components in file paths  / on macOS or linux, \ on Windows
+  // ${env:USERNAME} // 从环境变量中取值
+  // ${config:editor.fontSize} // 从配置文件中获取配置
+  // ${command:extension.pickNodeProcess}  // 待调研
+  // ${input:variableID}  ${input:componentType} ${input:componentName}  // 使用输入框提示，使用示例如下：
+  // type支持  promptString    pickString  command
+  // "inputs": [
+  //   {
+  //     "type": "pickString",
+  //     "id": "componentType",
+  //     "description": "What type of component do you want to create?",
+  //     "options": [
+  //       "component",
+  //       "directive",
+  //       "pipe",
+  //       "service",
+  //       "class",
+  //       "guard",
+  //       "interface",
+  //       "enum"
+  //     ],
+  //     "default": "component"
+  //   },
+  //   {
+  //     "type": "promptString",
+  //     "id": "componentName",
+  //     "description": "Name your component.",
+  //     "default": "my-new-component"
+  //   },
+  //   {
+  //     "type": "command",
+  //     "id": "componentName",
+  //     "command": "ls",
+  //     "args": "arg1"
+  //   }
+  // ]
+  "version": "0.2.0",
+  "configurations": [
+    //        C & CPP 程序调试配置
+    {
+      "name": "(gdb) Attach",
+      "type": "cppdbg", // C和CPP 的调试类型
+      "request": "attach", // 启动方式，目前只支持launch 和 attach
+      "program": "/usr/bin/fdfs_storaged", // 制定可运行二进制文件路径
+      "processId": "${command:pickProcess}", // 启动debug之后，会让你选择对应的pid
+      "MIMode": "gdb" // 指定gdb调试器的路径
+    },
+    {
+      "name": "gdb Run",
+      "type": "cppdbg",
+      "request": "launch",
+      "MIMode": "gdb",
+      "cwd": "${workspaceFolder}", // 指定工作时的相对路径
+      "program": "/usr/bin/fdfs_storaged",
+      "args": ["/etc/fdfs/storage.conf", "start"], // 启动程序时的路径名称
+      //"environment": [{ "name": "value" }], // 启动程序时指定环境变量
+      // "linux": {  // 还可以使用如下形式指定特定操作系统的环境配置
+      //   "environment": [{ "name": "value" }]
+      // },
+      "stopAtEntry": true //是否停止在main函数的入口处
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+// For format details, see https://aka.ms/devcontainer.json
+//  配置文件中常用的环境变量
+//   ${localWorkspaceFolder} ${localWorkspaceFolderBasename}  工程主目录
+//   ${containerWorkspaceFolder}  ${containerWorkspaceFolderBasename}  容器内配置
+//   ${localEnv:VARIABLE_NAME} ${containerEnv:VARIABLE_NAME} 
+{
+  // 环境名称
+  "name": "xxxdev",
+  // 引用的镜像地址，，支持是image和build两种属性，选择其一
+  "image": "liuwenru/ubuntu_dev:x86",
+  // 如果没有指定的镜像，可以使用构建脚本
+  // "build":{
+  // 	"dockerfile": "",
+  // 	"context": "..", // 指定构建的上下文路径，一般使用 .. 来指定工程目录
+  // 	"target": "golangdev", // 指定构建的镜像名称
+  // 	"cacheFrom": "--cache-from"
+  // },
+  // 指定容器运行时的环境变量信息，key-value结构
+  "containerEnv": {
+    "enablesshd": "true"
+  },
+  // 指定在连接上容器之后，terminal的环境变量信息
+  "remoteEnv": {
+    "appname": "dev"
+  },
+  "containerUser": "root",
+  "remoteUser": "root",
+  // 文件挂载，重点关注一下,这里默认走的是linux的配置目录位置，可能对于mac的目录需要修改一下
+  "mounts": [
+    "source=${env:HOME}/.m2,target=/root/.m2,type=bind,consistency=consistent",
+    "source=${env:HOME}/tools/apps,target=/opt/apps,type=bind,consistency=consistent"
+  ],
+  // 指定工作目录环境
+  "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace,type=bind,consistency=consistent",
+  // 容器环境创建完成后连接进入默认的工作目录
+  "workspaceFolder": "/root/workspace",
+  // docker run 容器时指定的参数列表
+  "runArgs": ["--net=host", "--privileged"],
+  // 覆盖终端启动命令， 默认情况下vscode会在进入容器后执行/bin/sh -c "while sleep 1000; do :; done" 这样容器就可以不退出了，但是有的时候我们特殊镜像指定了特殊的启动命令，
+  // 使用true和false来指定是否替代
+  "overrideCommand": true,
+  "shutdownAction": "stopContainer",
+  // 如果容器没有指定 --net=host 可以使用端口转发的形式转发容器内端口至外部
+  // "forwardPorts": [],
+  // 生命周期控制脚本
+  "initializeCommand": "", // 在启动时，在工作路径下执行的命令
+  "onCreateCommand": "bash ${containerWorkspaceFolder}/.devcontainer/containerinit.sh", // 创建容器后，在容器内执行的第一个命令
+  "updateContentCommand": "",
+  "postCreateCommand": "",
+  "postStartCommand": "",
+  "postAttachCommand": "",
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // "postCreateCommand": "uname -a",
+  // "features": {
+  // 	"sshd": "latest",
+  // 	"fish": "latest",
+  // 	"golang": "latest"
+  // }
+  // Set *default* container specific settings.json values on container create.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        //          开发配置
+        "git.ignoreLegacyWarning": true,
+        "C_Cpp.updateChannel": "Insiders",
+        // golang 配置
+        "go.useLanguageServer": true,
+        "go.toolsManagement.autoUpdate": true,
+        "go.autocompleteUnimportedPackages": true,
+        // python 配置
+        "python.languageServer": "Pylance",
+        // java 配置
+        "java.configuration.checkProjectSettingsExclusions": false,
+        "java.project.importOnFirstTimeStartup": "automatic",
+        "maven.executable.options": "-DskipTests",
+        "maven.terminal.useJavaHome": true
+      },
+      // Add the IDs of extensions you want installed when the container is created.
+      "extensions": []
+      // 指定vscode server连接的端口，一般这个端口是随机的，不需要配置，如果是特殊环境可以指定
+      //"devPort": 0
+    }
+  }
+}
