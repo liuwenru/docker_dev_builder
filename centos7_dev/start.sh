@@ -19,5 +19,5 @@ if [[ $sshport != "" ]];then
 else
     sed -i 's/#Port.*/Port 2223/g' /etc/ssh/sshd_config
 fi
-
+sed -i 's/#UseDNS.*/UseDNS no/g' /etc/ssh/sshd_config
 /usr/sbin/sshd -D -e
