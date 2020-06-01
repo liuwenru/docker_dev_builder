@@ -13,6 +13,12 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 ENV JAVA_HOME /usr/local/jdk
 ENV PATH $JAVA_HOME/bin:$PATH
 
+ENV ANT_HOME /usr/local/ant
+ENV PATH $PATH:${ANT_HOME}/bin
+
+
+ENV MAVEN_HOME /usr/local/maven
+ENV PATH $PATH:${MAVEN_HOME}/bin
 
 
 RUN chmod +x /start.sh /tini
