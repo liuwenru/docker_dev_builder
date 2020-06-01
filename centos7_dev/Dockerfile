@@ -9,6 +9,12 @@ RUN yum -y install vim gcc gcc-c++ perl-Encode*  perl-Data-Dumper perl-Text-Unid
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 
+
+ENV JAVA_HOME /usr/local/jdk
+ENV PATH $JAVA_HOME/bin:$PATH
+
+
+
 RUN chmod +x /start.sh /tini
 ENTRYPOINT ["/tini", "-g", "--"]
 CMD /start.sh
