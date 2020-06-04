@@ -5,7 +5,7 @@ COPY start.sh /start.sh
 RUN chmod +x /start.sh
 RUN yum -y install  epel-release
 RUN yum -y install openssh openssh-server openssh-clients net-tools iproute gdb
-RUN yum -y install vim gcc gcc-c++ perl-Encode*  perl-Data-Dumper perl-Text-Unidecode   perl-libintl autoconf automake git file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch
+RUN yum -y install vim gcc gcc-c++ perl-Encode*  perl-Data-Dumper perl-Text-Unidecode   perl-libintl autoconf automake git file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 
