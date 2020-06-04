@@ -19,7 +19,7 @@ ENV PATH $PATH:${ANT_HOME}/bin
 
 ENV MAVEN_HOME /usr/local/maven
 ENV PATH $PATH:${MAVEN_HOME}/bin
-
+ENV LANG en_US.utf-8
 
 RUN chmod +x /start.sh /tini
 ENTRYPOINT ["/tini", "-g", "--"]
