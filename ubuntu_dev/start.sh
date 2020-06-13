@@ -10,13 +10,13 @@ test -f /root/.ssh/authorized_keys || /usr/bin/cp /root/.ssh/id_rsa.pub /root/.s
 echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC91aL7mwiy81Pps8Yj85P1tTCO/vqrZO+fUvHeIbQ6gzRrxnMy1mL1oRwRdzUoOKraw8tVEssDCqsY/XNIwseflhMyMUt9PwdSX9cBo4lUy74SRIyTmZqbghH/uFzg0vvsneIzYWUSNE2we5i4agsWW4IqCfOPKaw4qvM0i7cASeo1BF7a7p4xMOug6dYiGxJY4EmGS9MbkLQ/5mlrLDVK6aawLZyuxIZ6cR6S0zoqHJTj+F67Zld3m/AWljHNyCjqgua+zqSfYtVS1D45omjPC6g8KQkvkBJGg4MR6VhhvoNyB4/TZcQrdmiRSS0RQpr6qoFQHHmzQw7xhjQaaLUj ijarvis@ijarvisMacBookPro.local" >> /root/.ssh/authorized_keys
 
 
-if [[ $rootpass != "" ]];then
-    echo $rootpass | passwd root --stdin
+if [ "$rootpass" != "" ];then
+  echo 'root:'${rootpass}'' | chpasswd
 else
-    echo "liuwenru" | passwd root --stdin
+  echo 'root:liuwenru' | chpasswd
 fi
 
-if [[ $sshport != "" ]];then
+if [ "$sshport" != "" ];then
     sed -i 's/#Port.*/Port '$sshport'/g' /etc/ssh/sshd_config
 else
     sed -i 's/#Port.*/Port 2223/g' /etc/ssh/sshd_config
