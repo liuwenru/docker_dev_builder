@@ -1,4 +1,4 @@
-FROM registry.epoint.com.cn/base/centos:7.8.2003
+FROM centos:centos7.6.1810
 
 
 COPY start.sh /start.sh
