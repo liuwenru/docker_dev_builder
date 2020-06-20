@@ -3,4 +3,4 @@
 
 
 
-docker build --no-cache --network=host -f Dockerfile -t ubuntudev .
+docker build --no-cache --network=host -f Dockerfile -t liuwenru/centos_dev .
