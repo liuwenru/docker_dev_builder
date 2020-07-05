@@ -6,7 +6,7 @@ RUN chmod +x /start.sh
 RUN apt-get update && apt-get install -y locales vim gcc g++ && rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt-get update && apt-get install -y openssh-server git 
 RUN mkdir /var/run/sshd
 RUN echo 'root:liuwenru' | chpasswd
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
