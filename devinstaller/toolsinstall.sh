@@ -10,5 +10,5 @@ fi
 
 chmod +x /tini
 
-curl -k -o /root/.gitconfig https://ijarvis.obs.cn-east-3.myhuaweicloud.com/tools/mymacprofile/git/gitconfig
-curl -k -o /root/.gitignore_global https://ijarvis.obs.cn-east-3.myhuaweicloud.com/tools/mymacprofile/git/gitignore_global
+curl -k -o /root/.gitconfig https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/mymacprofile/git/gitconfig
+curl -k -o /root/.gitignore_global https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/mymacprofile/git/gitignore_global
