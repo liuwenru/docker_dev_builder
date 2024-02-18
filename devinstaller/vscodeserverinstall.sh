@@ -20,6 +20,7 @@ repo="microsoft/vscode"
 version_count=3 # Get the most recent 3 versions
 all_tags=$(git ls-remote --tags https://github.com/${repo}.git | grep 'refs/tags/[0-9]')
 recent_tags=($(echo "${all_tags}" | sed 's|.*/||' | grep -v '\^' | sort -rV | head -n${version_count}))
+recent_tags+=(1.85.2)
 newest_ver=""
 for tag_ver in "${recent_tags[@]}"; do
   # Account for both lightweight and annotated tags

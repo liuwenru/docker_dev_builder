@@ -10,5 +10,5 @@ fi
 
 chmod +x /tini
 
-curl -k -o /root/.gitconfig https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/mymacprofile/git/gitconfig
-curl -k -o /root/.gitignore_global https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/mymacprofile/git/gitignore_global
+curl -k -o /root/.gitconfig https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitconfig
+curl -k -o /root/.gitignore_global https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitignore_global
