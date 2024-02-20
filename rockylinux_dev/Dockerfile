@@ -2,7 +2,7 @@ FROM rockylinux:9.3.20231119 AS base
 
 RUN dnf install -y dnf-plugins-core && dnf install -y epel-release && dnf config-manager --set-enabled crb
 
-RUN yum -y install openssh openssh-server openssh-clients util-linux-user procps-ng-devel
+RUN yum -y install openssh openssh-server openssh-clients util-linux-user procps-ng-devel fuse-sshfs
 RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool git file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel net-tools iproute gdb 
 
 

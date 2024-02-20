@@ -7,7 +7,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
 RUN apt-get update
-RUN apt-get install -y locales gcc g++ libncurses-dev vim net-tools git curl iftop htop build-essential gdb iproute2 && rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+RUN apt-get install -y locales gcc g++ libncurses-dev vim net-tools git curl iftop htop build-essential gdb iproute2 && \ 
+  rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
 # SSH Install
@@ -51,6 +52,8 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
   go install github.com/go-delve/delve/cmd/dlv@latest && \
   go install honnef.co/go/tools/cmd/staticcheck@latest && \
   go install golang.org/x/tools/gopls@latest
+
+FROM golangdev AS nodedev  
 # nvm Install
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
@@ -58,14 +61,7 @@ FROM nodedev AS pydev
 # python Install
 RUN bash /opt/devinstaller/pyinstaller.sh
 
-# 配置 xvfb和x11vnc 环境
-ENV DISPLAY=":1"
-RUN apt-get install -y x11vnc xvfb firefox gedit-dev xdotool  
-RUN mkdir /root/.vnc && \
-  touch /root/.vnc/passwd && \
-  x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
-
-
+FROM pydev AS javadev
 # 配置 Java开发环境
 RUN bash /opt/devinstaller/javainstaller.sh 
 
