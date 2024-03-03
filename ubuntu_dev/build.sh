@@ -1,14 +1,12 @@
 #!/bin/bash
-
 if [[ -d devinstaller ]]; then
   rm -rf devinstaller
 fi
 cp -r ../devinstaller ./devinstaller
 
 if [[ $(uname -m) == "x86_64" ]]; then
-  docker build --no-cache --builder mybuilder --network=host -f Dockerfile --load -t liuwenru/ubuntu_dev:$(uname -m) .
+  DOCKER_BUILDKIT=0 docker build --no-cache --network=host -f Dockerfile-x86_64 -t liuwenru/ubuntu_dev:$(uname -m) .
 elif [[ $(uname -m) == "aarch64" ]]; then
-  docker build --no-cache --network=host -f Dockerfile_aarch64 -t liuwenru/ubuntu_dev:$(uname -m) .
+  DOCKER_BUILDKIT=0 docker build --no-cache --network=host -f Dockerfile-aarch64 -t liuwenru/ubuntu_dev:$(uname -m) .
 fi
-
 rm -rf devinstaller
