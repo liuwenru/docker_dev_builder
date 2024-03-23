@@ -115,6 +115,9 @@ extensions=(
   vscode-icons-team.vscode-icons
   wholroyd.jinja
   zenghongtu.vscode-asciiflow2
+  llvm-vs-code-extensions.vscode-clangd
+  jiapeiyao.tab-group
+  suhay.vscode-editor-group-minimizer
 )
 
 export PATH=${PATH}:~/.vscode-server/bin/${newest_ver}/bin

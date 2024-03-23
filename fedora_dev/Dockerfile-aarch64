@@ -1,31 +1,11 @@
-FROM ubuntu AS base
+FROM fedora AS base
 
-ARG DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Shanghai
+RUN dnf install langpacks-en glibc-all-langpacks -y
 
-RUN apt-get update
-RUN apt-get install -y locales gcc g++ libncurses-dev vim net-tools curl iftop htop build-essential gdb iproute2 libcurl4-openssl-dev gettext autotools-dev autoconf automake unzip && \
-  rm -rf /var/lib/apt/lists/* && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG en_US.utf8
-
-# SSH Install
-RUN apt-get update && apt-get install -y openssh-server
-RUN mkdir /var/run/sshd
-RUN echo 'root:liuwenru' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
-
-# 配置 xvfb和x11vnc 环境
-# ENV DISPLAY=":1"
-# RUN apt-get install -y x11vnc xvfb firefox gedit-dev xdotool  
-# RUN mkdir /root/.vnc && \
-#   touch /root/.vnc/passwd && \
-#   x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
-
+RUN dnf -y install openssh openssh-server openssh-clients 
+RUN dnf -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison* texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel net-tools iproute gdb  binutils libcurl-devel
+ENV LANG=en_US.utf-8
+ENV LC_ALL=en_US.utf-8
 ###############################    Devtools Env    ###############################
 FROM base AS devtools
 COPY devinstaller /opt/devinstaller
@@ -47,7 +27,7 @@ ENV GOPROXY=https://goproxy.io,direct
 RUN bash /opt/devinstaller/golanginstaller.sh
 ENV GOPATH /opt/goworkspace
 ENV PATH /opt/go/bin:$GOPATH/bin:$PATH
-RUN go install github.com/ramya-rao-a/go-outline@latest && \
+RUN go install github.com/ramya-rao-a/go-outline@latest && \ 
   go install github.com/cweill/gotests/gotests@latest && \
   go install github.com/fatih/gomodifytags@latest && \
   go install github.com/josharian/impl@latest && \
@@ -89,7 +69,7 @@ ENV LANG en_US.utf-8
 
 FROM javadev AS vscodeserver
 # 安装vscode server
-RUN bash /opt/devinstaller/vscodeserverinstall.sh
+RUN bash /opt/devinstaller/vscodeserverinstall.sh 
 
 RUN rm -rf /tmp/*
 

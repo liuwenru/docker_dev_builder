@@ -3,23 +3,25 @@ FROM centos:centos7.9.2009 AS base
 RUN yum makecache && yum makecache fast
 RUN yum -y install openssh openssh-server openssh-clients
 
-
-RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool git file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel centos-release-scl scl-utils-build scl-utils net-tools iproute gdb 
+RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel centos-release-scl scl-utils-build scl-utils net-tools iproute gdb  libcurl-devel openssl-devel
 
 RUN yum -y install devtoolset-8*
-
-
-
 
 ###############################    Devtools Env    ###############################
 FROM base AS devtools
 COPY devinstaller /opt/devinstaller
 # Bash Plugin install
 RUN bash /opt/devinstaller/toolsinstall.sh
+ENV PATH /usr/local/git/bin:$PATH
+
+FROM devtools AS cdev
+# 配置 Java开发环境
+RUN bash /opt/devinstaller/cinstall.sh
+ENV PATH /usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
 # Lua Install
 RUN bash /opt/devinstaller/luainstaller.sh
 
-FROM devtools AS golangdev
+FROM cdev AS golangdev
 # Golang Install
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.io,direct
@@ -35,17 +37,26 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
   go install honnef.co/go/tools/cmd/staticcheck@latest && \
   go install golang.org/x/tools/gopls@latest
 
+# install some golang tools
+RUN  go install github.com/jstemmer/gotags@latest && \
+  go install mvdan.cc/sh/v3/cmd/gosh@latest && \
+  go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+
 FROM golangdev AS nodedev
 # nvm Install
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 FROM nodedev AS pydev
 # python Install
-# RUN bash /opt/devinstaller/pyinstaller.sh
+RUN bash /opt/devinstaller/pyinstaller.sh
 
 FROM pydev AS javadev
 # 配置 Java开发环境
 RUN bash /opt/devinstaller/javainstaller.sh 
+
+
+
 
 ENV JAVA_HOME /usr/local/jdk
 ENV PATH $JAVA_HOME/bin:$PATH
@@ -60,6 +71,8 @@ ENV LANG en_US.utf-8
 FROM javadev AS vscodeserver
 # 安装vscode server
 RUN bash /opt/devinstaller/vscodeserverinstall.sh 
+
+RUN rm -rf /tmp/*
 
 RUN chsh -s /usr/bin/bash
 COPY start.sh /start.sh

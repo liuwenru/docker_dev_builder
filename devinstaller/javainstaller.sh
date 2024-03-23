@@ -11,28 +11,28 @@ fi
 # Openjdk8 install
 curl -k -o /tmp/jdk.tar.gz ${jdkdownloadurl}
 mkdir /opt/openjdk8
-tar -zxvf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk8/
+tar -zxf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk8/
 ln -s /opt/openjdk8 /usr/local/jdk
 rm -rf /tmp/jdk.tar.gz
 
 # Openjdk11 install
 curl -k -o /tmp/jdk.tar.gz ${jdk11downloadurl}
 mkdir /opt/openjdk11
-tar -zxvf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk11/
+tar -zxf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk11/
 ln -s /opt/openjdk11 /usr/local/jdk11
 rm -rf /tmp/jdk.tar.gz
 
 antdownloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/apache-ant-1.10.12-bin.tar.gz"
 curl -k -o /tmp/ant.tar.gz ${antdownloadurl}
 mkdir /opt/ant
-tar -zxvf /tmp/ant.tar.gz --strip-components 1 -C /opt/ant/
+tar -zxf /tmp/ant.tar.gz --strip-components 1 -C /opt/ant/
 ln -s /opt/ant /usr/local/ant
 rm -rf /tmp/ant.tar.gz
 
 mavendownloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/apache-maven-3.8.6-bin.tar.gz"
 curl -k -o /tmp/maven.tar.gz ${mavendownloadurl}
 mkdir /opt/maven
-tar -zxvf /tmp/maven.tar.gz --strip-components 1 -C /opt/maven/
+tar -zxf /tmp/maven.tar.gz --strip-components 1 -C /opt/maven/
 ln -s /opt/maven /usr/local/maven
 rm -rf /tmp/maven.tar.gz
 
