@@ -3,16 +3,18 @@
 if [[ $(uname -m) == "x86_64" ]]; then
   jdkdownloadurl="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/OpenJDK8U-jdk_x64_linux_hotspot_8u312b07.tar.gz"
   jdk11downloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/OpenJDK11U-jdk_x64_linux_hotspot_11.0.8_10.tar.gz"
+  jdk17downloadurl="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/.openjdk17/OpenJDK17U-jdk_x64_linux_hotspot_17.0.10_7.tar.gz"
 elif [[ $(uname -m) == "aarch64" ]]; then
   jdkdownloadurl="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/OpenJDK8U-jdk_aarch64_linux_hotspot_8u312b07.tar.gz"
   jdk11downloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/OpenJDK11U-jdk_aarch64_linux_hotspot_11.0.15_10.tar.gz"
+  jdk17downloadurl="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/.openjdk17/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.10_7.tar.gz"
 fi
 
 # Openjdk8 install
 curl -k -o /tmp/jdk.tar.gz ${jdkdownloadurl}
 mkdir /opt/openjdk8
 tar -zxf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk8/
-ln -s /opt/openjdk8 /usr/local/jdk
+ln -s /opt/openjdk8 /usr/local/jdk8
 rm -rf /tmp/jdk.tar.gz
 
 # Openjdk11 install
@@ -21,6 +23,15 @@ mkdir /opt/openjdk11
 tar -zxf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk11/
 ln -s /opt/openjdk11 /usr/local/jdk11
 rm -rf /tmp/jdk.tar.gz
+
+# Openjdk17 install
+curl -k -o /tmp/jdk.tar.gz ${jdk17downloadurl}
+mkdir /opt/openjdk17
+tar -zxf /tmp/jdk.tar.gz --strip-components 1 -C /opt/openjdk17/
+ln -s /opt/openjdk17 /usr/local/jdk17
+rm -rf /tmp/jdk.tar.gz
+
+ln -s /opt/openjdk17 /usr/local/jdk
 
 antdownloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/apache-ant-1.10.12-bin.tar.gz"
 curl -k -o /tmp/ant.tar.gz ${antdownloadurl}

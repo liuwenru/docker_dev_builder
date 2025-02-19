@@ -8,10 +8,26 @@
 
 docker buildx create --use --name mybuilder --driver-opt network=host --buildkitd-flags '--allow-insecure-entitlement network.host'
 
+
+# 使用如下命令行获取已经安装的插件
+code --list-extensions| sort -f
+
+
+
 ```
 
 
 
+```bash
+# 构建centos开发镜像
+dockeramd build --no-cache --network=host -f Dockerfile-x86_64 -t liuwenru/centos_dev:$(uname -m) .
+dockeraarch64 build --no-cache --network=host -f Dockerfile-aarch64 -t liuwenru/centos_dev:$(uname -m) .
+
+
+
+
+
+```
 
 
 
