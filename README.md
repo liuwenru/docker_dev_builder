@@ -13,7 +13,6 @@ docker buildx create --use --name mybuilder --driver-opt network=host --buildkit
 code --list-extensions| sort -f
 
 
-
 ```
 
 
@@ -21,11 +20,8 @@ code --list-extensions| sort -f
 ```bash
 # 构建centos开发镜像
 dockeramd build --no-cache --network=host -f Dockerfile-x86_64 -t liuwenru/centos_dev:$(uname -m) .
+
 dockeraarch64 build --no-cache --network=host -f Dockerfile-aarch64 -t liuwenru/centos_dev:$(uname -m) .
-
-
-
-
 
 ```
 
