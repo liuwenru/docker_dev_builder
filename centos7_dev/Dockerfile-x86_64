@@ -1,36 +1,37 @@
-FROM centos:centos7.9.2009 AS base
+FROM quay.io/centos/centos:centos7.9.2009 AS base
 
-RUN curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo && curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo && sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo && yum makecache && yum makecache fast
+RUN curl -s -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo && curl -s -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo && sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo && yum makecache && yum makecache fast
 RUN yum -y install openssh openssh-server openssh-clients
 
-RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison* texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel centos-release-scl scl-utils-build scl-utils net-tools iproute gdb libcurl-devel openssl-devel
+RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison* texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel net-tools iproute gdb libcurl-devel openssl-devel unzip
 
 # RUN yum -y install devtoolset-8*
-ENV LANG=en_US.utf-8
-ENV LC_ALL=en_US.utf-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 ###############################    Devtools Env    ###############################
 
 COPY devinstaller /opt/devinstaller
 # 安装vscode server
-RUN bash /opt/devinstaller/vscodeserverinstall.sh
+RUN curl -s -k -L -o /tmp/gunglibc.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/gnulibc/gnulibc-x86_64.tar.gz && tar -zxvf /tmp/gunglibc.tar.gz -C /opt/ && curl -s -k -L -o /tmp/patchelf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/patchelf/patchelf-0.15.0-x86_64.tar.gz && tar -zxvf /tmp/patchelf.tar.gz -C /usr/
+ENV VSCODE_SERVER_PATCHELF_PATH="/usr/bin/patchelf"
+ENV VSCODE_SERVER_CUSTOM_GLIBC_PATH="/opt/gnulibc-x86_64/x86_64-linux-gnu/x86_64-linux-gnu/sysroot/lib"
+ENV VSCODE_SERVER_CUSTOM_GLIBC_LINKER="/opt/gnulibc-x86_64/x86_64-linux-gnu/x86_64-linux-gnu/sysroot/lib/ld-linux-x86-64.so.2"
+RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit c306e94f98122556ca081f527b466015e1bc37b0
 
 # Bash Plugin install
 RUN bash /opt/devinstaller/toolsinstall.sh
-ENV PATH /usr/local/git/bin:$PATH
+ENV PATH=/usr/local/git/bin:$PATH
 
 # 配置 Java开发环境
 RUN bash /opt/devinstaller/cinstall.sh
-ENV PATH /usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
+ENV PATH=/usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
 # Lua Install
 RUN bash /opt/devinstaller/luainstaller.sh
 
 # Golang Install
-ENV GO111MODULE=on
-ENV GOPROXY=https://goproxy.io,direct
 RUN bash /opt/devinstaller/golanginstaller.sh
-ENV GOPATH /opt/goworkspace
-ENV PATH /opt/go/bin:$GOPATH/bin:$PATH
-RUN go install github.com/ramya-rao-a/go-outline@latest && \ 
+ENV PATH=/opt/go/bin:$PATH
+RUN unset https_proxy && unset HTTPS_PROXY && go install github.com/ramya-rao-a/go-outline@latest && \ 
 go install github.com/cweill/gotests/gotests@latest && \ 
 go install github.com/fatih/gomodifytags@latest && \ 
 go install github.com/josharian/impl@latest && \ 
@@ -40,7 +41,7 @@ go install honnef.co/go/tools/cmd/staticcheck@latest && \
 go install golang.org/x/tools/gopls@latest
 
 # install some golang tools
-RUN go install github.com/jstemmer/gotags@latest && \ 
+RUN unset https_proxy && unset HTTPS_PROXY && go install github.com/jstemmer/gotags@latest && \ 
 go install mvdan.cc/sh/v3/cmd/gosh@latest && \ 
 go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
@@ -53,20 +54,20 @@ RUN bash /opt/devinstaller/pyinstaller.sh
 # 配置 Java开发环境
 RUN bash /opt/devinstaller/javainstaller.sh
 
-ENV JAVA_HOME /usr/local/jdk
-ENV PATH $JAVA_HOME/bin:$PATH
+ENV JAVA_HOME=/usr/local/jdk
+ENV PATH=$JAVA_HOME/bin:$PATH
 
-ENV ANT_HOME /usr/local/ant
-ENV PATH $PATH:${ANT_HOME}/bin
+ENV ANT_HOME=/usr/local/ant
+ENV PATH=$PATH:${ANT_HOME}/bin
 
-ENV MAVEN_HOME /usr/local/maven
-ENV PATH $PATH:${MAVEN_HOME}/bin
-ENV LANG en_US.utf-8
+ENV MAVEN_HOME=/usr/local/maven
+ENV PATH=$PATH:${MAVEN_HOME}/bin
+ENV LANG=en_US.UTF-8
 
 RUN rm -rf /tmp/*
 
 RUN chsh -s /usr/bin/bash
-COPY start.sh /start.sh
+COPY centos7_dev/start.sh /start.sh
 RUN chmod +x /start.sh /tini
 ENTRYPOINT ["/tini", "-g", "--"]
-CMD /bin/bash /start.sh
+CMD ["/bin/bash","/start.sh"]

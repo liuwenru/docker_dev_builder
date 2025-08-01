@@ -26,17 +26,16 @@ else
     gnupg2 \
     unzip
 fi
-curl -k -o /tmp/lua.tar.gz "https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/lua-5.4.3.tar.gz"
+curl -k -L -o /tmp/lua.tar.gz "https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/lua-5.4.3.tar.gz"
 mkdir /tmp/lua
 tar -xf /tmp/lua.tar.gz -C /tmp/lua --strip-components=1
 cd /tmp/lua && make linux && make install
 
 # install lua package managers
-curl -k -o /tmp/luarocks.tar.gz "https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/luarocks-3.7.0.tar.gz"
+curl -k -L -o /tmp/luarocks.tar.gz "https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/luarocks-3.7.0.tar.gz"
 mkdir /tmp/luarocks
 tar -xf /tmp/luarocks.tar.gz -C /tmp/luarocks --strip-components=1
 cd /tmp/luarocks && ./configure && make && make install
-
 
 # Clean installer tag files
 

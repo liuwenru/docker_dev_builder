@@ -10,30 +10,30 @@ fi
 
 chmod +x /tini
 
-curl -k -o /root/.gitconfig https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitconfig
-curl -k -o /root/.gitignore_global https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitignore_global
+curl -k -L -o /root/.gitconfig https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitconfig
+curl -k -L -o /root/.gitignore_global https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitignore_global
 
 # bash tools
 
-set +o history
-curl -k -o /tmp/bashit.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/bashit-v3.0.3.tar.gz
+curl -k -L -o /tmp/bashit.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/bashit/bashit-v3.0.3.tar.gz
 mkdir ~/.bash_it
-tar -zxf /tmp/bashit.tar.gz --strip-components 1 -C ~/.bash_it
+tar -zxvf /tmp/bashit.tar.gz --strip-components 1 -C ~/.bash_it
 ~/.bash_it/install.sh --silent --append-to-config
 if [[ $(uname -m) == "x86_64" ]]; then
-  curl -k -o /tmp/fzf.tar.gz -L https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.45.0-linux_amd64.tar.gz
+  curl -k -L -o /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_amd64.tar.gz
 elif [[ $(uname -m) == "aarch64" ]]; then
-  curl -k -o /tmp/fzf.tar.gz -L https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.45.0-linux_arm64.tar.gz
+  curl -k -L -o /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_arm64.tar.gz
 fi
 mkdir ~/.fzf
-curl -k -o /tmp/fzfinstall.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.45.0.tar.gz
-tar --strip-components=1 -zxf /tmp/fzfinstall.tar.gz -C ~/.fzf/
+curl -k -L -o /tmp/fzfinstall.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0.tar.gz
+tar --strip-components=1 -zxvf /tmp/fzfinstall.tar.gz -C ~/.fzf/
 tar -zxf /tmp/fzf.tar.gz -C ~/.fzf/bin
 cd ~/.fzf && ./install --all
 echo "alias ll='ls -lh'" >>~/.bashrc
+sed -i '/export BASH_IT="\/root\/.bash_it"/a export THEME_SHOW_CLOCK_CHAR=false' ~/.bashrc
 sed -i 's/export SCM_CHECK=true/export SCM_CHECK=false/g' ~/.bashrc
 source ~/.bashrc
-set -o history
+if [[ $SHELL == "/bin/bash" ]]; then set -o history; fi
 
 # install git
 curl -k -L -o /tmp/git.tar.gz https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.44.0.tar.gz

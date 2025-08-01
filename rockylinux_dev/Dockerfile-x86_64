@@ -1,11 +1,8 @@
-FROM rockylinux:9.3.20231119 AS base
-
+FROM rockylinux/rockylinux:9.6.20250531 AS base
 RUN dnf install -y dnf-plugins-core && dnf install -y epel-release && dnf config-manager --set-enabled crb
 
 RUN yum -y install openssh openssh-server openssh-clients util-linux-user procps-ng-devel fuse-sshfs
 RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel net-tools iproute gdb libcurl-devel
-
-
 
 ENV LANG=en_US.utf-8
 ENV LC_ALL=en_US.utf-8
@@ -31,19 +28,18 @@ RUN bash /opt/devinstaller/golanginstaller.sh
 ENV GOPATH /opt/goworkspace
 ENV PATH /opt/go/bin:$GOPATH/bin:$PATH
 RUN go install github.com/ramya-rao-a/go-outline@latest && \ 
-  go install github.com/cweill/gotests/gotests@latest && \
-  go install github.com/fatih/gomodifytags@latest && \
-  go install github.com/josharian/impl@latest && \
-  go install github.com/haya14busa/goplay/cmd/goplay@latest && \
-  go install github.com/go-delve/delve/cmd/dlv@latest && \
-  go install honnef.co/go/tools/cmd/staticcheck@latest && \
+go install github.com/cweill/gotests/gotests@latest &&
+  go install github.com/fatih/gomodifytags@latest &&
+  go install github.com/josharian/impl@latest &&
+  go install github.com/haya14busa/goplay/cmd/goplay@latest &&
+  go install github.com/go-delve/delve/cmd/dlv@latest &&
+  go install honnef.co/go/tools/cmd/staticcheck@latest &&
   go install golang.org/x/tools/gopls@latest
 
 # install some golang tools
-RUN  go install github.com/jstemmer/gotags@latest && \
-  go install mvdan.cc/sh/v3/cmd/gosh@latest && \
+RUN go install github.com/jstemmer/gotags@latest &&
+  go install mvdan.cc/sh/v3/cmd/gosh@latest &&
   go install mvdan.cc/sh/v3/cmd/shfmt@latest
-
 
 FROM golangdev AS nodedev
 # nvm Install
@@ -55,10 +51,7 @@ RUN bash /opt/devinstaller/pyinstaller.sh
 
 FROM pydev AS javadev
 # 配置 Java开发环境
-RUN bash /opt/devinstaller/javainstaller.sh 
-
-
-
+RUN bash /opt/devinstaller/javainstaller.sh
 
 ENV JAVA_HOME /usr/local/jdk
 ENV PATH $JAVA_HOME/bin:$PATH
@@ -72,7 +65,7 @@ ENV LANG en_US.utf-8
 
 FROM javadev AS vscodeserver
 # 安装vscode server
-RUN bash /opt/devinstaller/vscodeserverinstall.sh 
+RUN bash /opt/devinstaller/vscodeserverinstall.sh
 
 RUN rm -rf /tmp/*
 

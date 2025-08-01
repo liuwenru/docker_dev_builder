@@ -1,11 +1,15 @@
 #!/bin/bash
+
+# normal funtion
+
 workdir=$(pwd)
 os=$(cat /etc/os-release | grep -E "^NAME=(.*)" | sed 's/NAME=//g' | sed 's/"//g' | tr -s '\n')
+
 if [[ $(uname -m) == "x86_64" ]]; then
   echo "x86_64"
   # install glibc
   if [[ ${os} == "CentOS Linux" ]]; then
-    curl -k -o /tmp/glibc2.18.tar.gz https://mirrors.tuna.tsinghua.edu.cn/gnu/glibc/glibc-2.18.tar.gz
+    curl -k -L -o /tmp/glibc2.18.tar.gz https://mirrors.tuna.tsinghua.edu.cn/gnu/glibc/glibc-2.18.tar.gz
     mkdir /tmp/glibcbuild
     tar --strip-components=1 -zxf /tmp/glibc2.18.tar.gz -C /tmp/glibcbuild
     cd /tmp/glibcbuild && mkdir build && cd build && ../configure --prefix=/opt/glibc2.18 && make -j$(nproc) && make install

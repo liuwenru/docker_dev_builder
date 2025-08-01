@@ -126,5 +126,6 @@
   "[xml]": {
     "editor.defaultFormatter": "DotJoshJohnson.xml"
   },
-  "terminal.integrated.tabs.description": "${task}${separator}${local}${separator}${process}"
+  "terminal.integrated.tabs.description": "${task}${separator}${local}${separator}${process}",
+  "extensions.verifySignature": false
 }
