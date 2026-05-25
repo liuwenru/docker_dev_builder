@@ -1,76 +1,88 @@
+# syntax=docker/dockerfile:1
 FROM centos:centos7.9.2009 AS base
 
-RUN rm -rf /etc/yum.repos.d/* && curl -o /etc/yum.repos.d/Centos7-aliyun.repo https://mirrors.wlnmp.com/centos/Centos7-aliyun-altarch.repo && sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/Centos7-aliyun.repo && yum makecache && yum makecache fast
-RUN yum -y install openssh openssh-server openssh-clients
+RUN rm -rf /etc/yum.repos.d/* && \
+  curl -o /etc/yum.repos.d/Centos7-aliyun.repo https://mirrors.wlnmp.com/centos/Centos7-aliyun-altarch.repo && \
+  sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/Centos7-aliyun.repo && \
+  yum makecache fast
 
-RUN yum -y install vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl autoconf automake libtool file bison* texinfo ncurses-* make gperf rsync gettext-devel wget patch CUnit-devel net-tools iproute gdb libcurl-devel openssl-devel glibc-common fontconfig dejavu-sans-fonts dejavu-serif-fonts kde-l10n-Chinese glibc-langpack-en unzip
+RUN --mount=type=cache,target=/var/cache/yum \
+  yum -y install openssh openssh-server openssh-clients && \
+  yum clean all
 
-# RUN yum -y install devtoolset-8*
-RUN localedef -c -f UTF-8 -i zh_CN zh_CN.UTF-8 && localedef -v -c -i en_US -f UTF-8 en_US.UTF-8
-RUN export LANG=zh_CN.UTF-8
-RUN echo "export LANG=zh_CN.UTF-8" >>/etc/locale.conf
+RUN --mount=type=cache,target=/var/cache/yum \
+  yum -y install \
+  vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl \
+  autoconf automake libtool file bison* texinfo ncurses-* make gperf rsync \
+  gettext-devel wget patch CUnit-devel net-tools iproute gdb libcurl-devel \
+  openssl-devel glibc-common fontconfig dejavu-sans-fonts dejavu-serif-fonts \
+  kde-l10n-Chinese glibc-langpack-en unzip && \
+  yum clean all
+
+RUN localedef -c -f UTF-8 -i zh_CN zh_CN.UTF-8 && \
+  localedef -v -c -i en_US -f UTF-8 en_US.UTF-8 && \
+  echo "export LANG=zh_CN.UTF-8" > /etc/locale.conf
+
 ENV LANG=zh_CN.UTF-8
 ENV LC_ALL=zh_CN.UTF-8
-###############################    Devtools Env    ###############################
 
+###############################    Devtools Env    ###############################
 COPY devinstaller /opt/devinstaller
-# 安装vscode server
-RUN curl -s -k -L -o /tmp/gunglibc.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/gnulibc/gnulibc-aarch64.tar.gz && tar -zxvf /tmp/gunglibc.tar.gz -C /opt/ && curl -s -k -L -o /tmp/patchelf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/patchelf/patchelf-0.15.0-aarch64.tar.gz && tar -zxvf /tmp/patchelf.tar.gz -C /usr/
+
+RUN curl -s -k -L -o /tmp/gunglibc.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/gnulibc/gnulibc-aarch64.tar.gz && \
+  tar -zxvf /tmp/gunglibc.tar.gz -C /opt/ && \
+  curl -s -k -L -o /tmp/patchelf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/patchelf/patchelf-0.15.0-aarch64.tar.gz && \
+  tar -zxvf /tmp/patchelf.tar.gz -C /usr/ && \
+  rm -rf /tmp/*.tar.gz
+
 ENV VSCODE_SERVER_PATCHELF_PATH="/usr/bin/patchelf"
 ENV VSCODE_SERVER_CUSTOM_GLIBC_PATH="/opt/gnulibc-aarch64/aarch64-linux-gnu/aarch64-linux-gnu/sysroot/lib"
 ENV VSCODE_SERVER_CUSTOM_GLIBC_LINKER="/opt/gnulibc-aarch64/aarch64-linux-gnu/aarch64-linux-gnu/sysroot/lib/ld-linux-aarch64.so.1"
 RUN bash /opt/devinstaller/download-vs-code.sh "linux" "arm64" --use-commit c306e94f98122556ca081f527b466015e1bc37b0
 
-# Bash Plugin install
 RUN bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
 
-# 配置 Java开发环境
+FROM base AS cdev
 RUN bash /opt/devinstaller/cinstall.sh
 ENV PATH=/usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
-# Lua Install
+
 RUN bash /opt/devinstaller/luainstaller.sh
 
-# Golang Install
-RUN bash /opt/devinstaller/golanginstaller.sh
+FROM cdev AS golangdev
 ENV PATH=/opt/go/bin:$PATH
-RUN unset https_proxy && unset HTTPS_PROXY && go install github.com/ramya-rao-a/go-outline@latest && \ 
-go install github.com/cweill/gotests/gotests@latest && \ 
-go install github.com/fatih/gomodifytags@latest && \ 
-go install github.com/josharian/impl@latest && \ 
-go install github.com/haya14busa/goplay/cmd/goplay@latest && \ 
-go install github.com/go-delve/delve/cmd/dlv@latest && \ 
-go install honnef.co/go/tools/cmd/staticcheck@latest && \ 
-go install golang.org/x/tools/gopls@latest
 
-# install some golang tools
-RUN unset https_proxy && unset HTTPS_PROXY && go install github.com/jstemmer/gotags@latest && \ 
-go install mvdan.cc/sh/v3/cmd/gosh@latest && \ 
-go install mvdan.cc/sh/v3/cmd/shfmt@latest
+RUN bash /opt/devinstaller/golanginstaller.sh
 
-# nvm Install
+RUN unset https_proxy && unset HTTPS_PROXY && \
+  go install github.com/ramya-rao-a/go-outline@latest && \
+  go install github.com/cweill/gotests/gotests@latest && \
+  go install github.com/fatih/gomodifytags@latest && \
+  go install github.com/josharian/impl@latest && \
+  go install github.com/haya14busa/goplay/cmd/goplay@latest && \
+  go install github.com/go-delve/delve/cmd/dlv@latest && \
+  go install honnef.co/go/tools/cmd/staticcheck@latest && \
+  go install golang.org/x/tools/gopls@latest && \
+  go install github.com/jstemmer/gotags@latest && \
+  go install mvdan.cc/sh/v3/cmd/gosh@latest && \
+  go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+FROM golangdev AS nodedev
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
-# python Install
-# RUN bash /opt/devinstaller/pyinstaller.sh
-
-# 配置 Java开发环境
+FROM nodedev AS javadev
 RUN bash /opt/devinstaller/javainstaller.sh
 
 ENV JAVA_HOME=/usr/local/jdk
-ENV PATH=$JAVA_HOME/bin:$PATH
-
 ENV ANT_HOME=/usr/local/ant
-ENV PATH=$PATH:${ANT_HOME}/bin
-
 ENV MAVEN_HOME=/usr/local/maven
-ENV PATH=$PATH:${MAVEN_HOME}/bin
-ENV LANG=zh_CN.UTF-8
+ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
 
 RUN rm -rf /tmp/*
-
 RUN chsh -s /usr/bin/bash
+
 COPY centos7_dev/start.sh /start.sh
 RUN chmod +x /start.sh /tini
+
 ENTRYPOINT ["/tini", "-g", "--"]
-CMD ["/bin/bash","/start.sh"]
+CMD ["/bin/bash", "/start.sh"]
