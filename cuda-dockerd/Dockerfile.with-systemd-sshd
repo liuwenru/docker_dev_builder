@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1
+FROM registry.epoint.com.cn/base/cuda:12.1.1-cudnn8-devel-rockylinux9
+
+ENV SSH_PORT=2223
+
+ENV NVIDIA_CONTAINER_TOOLKIT_VERSION=1.19.1-1
+RUN --mount=type=cache,target=/var/cache/dnf \
+  dnf -y install openssh-server openssh-clients sudo systemd initscripts net-tools iproute iputils iptables vim  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo &&  dnf install -y nvidia-container-toolkit-${NVIDIA_CONTAINER_TOOLKIT_VERSION} nvidia-container-toolkit-base-${NVIDIA_CONTAINER_TOOLKIT_VERSION} libnvidia-container-tools-${NVIDIA_CONTAINER_TOOLKIT_VERSION} libnvidia-container1-${NVIDIA_CONTAINER_TOOLKIT_VERSION}
+
+RUN ssh-keygen -A && \
+  mkdir -p /run/sshd && \
+  chmod 0755 /run/sshd
+
+RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+  sed -i 's/PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+  echo "UseDNS no" >> /etc/ssh/sshd_config
+
+
+RUN echo "root:91U2m0ESoERW" | chpasswd
+
+
+
+RUN curl -k -L -o /tmp/docker.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/amd64/docker-27.3.1.tgz && \
+  mkdir -p /usr/local/lib/docker/cli-plugins/ && curl -k -L -o /usr/local/lib/docker/cli-plugins/docker-compose https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/amd64/docker-compose-linux-x86_64 && \ 
+  curl -k -L -o /usr/local/lib/docker/cli-plugins/docker-buildx https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/amd64/buildx-v0.25.0.linux-amd64 && \
+  tar --strip-components=1 -xzvf /tmp/docker.tar.gz -C /usr/bin/ && rm -rf /tmp/docker.tar.gz && \
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose && \
+  cp /usr/local/lib/docker/cli-plugins/docker-compose /usr/bin && \
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx && \
+  curl -k -L -o  /lib/systemd/system/docker.service https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/docker.service && \
+  curl -k -L -o  /lib/systemd/system/docker.socket https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/docker.socket && \
+  curl -k -L -o  /lib/systemd/system/containerd.service https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/docker/containerd.service && \
+  sed -i 's/ExecStart=.*/ExecStart=\/usr\/bin\/containerd/g' /lib/systemd/system/containerd.service && \
+  groupadd docker 
+
+RUN nvidia-ctk runtime configure --runtime=docker
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

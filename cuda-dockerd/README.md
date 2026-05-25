@@ -1,0 +1,3 @@
+docker run -d --restart always --net=host --name cuda-systemd-ocr --cap-add=SYS_ADMIN --cap-add=SYS_CHROOT --cap-add=NET_ADMIN --security-opt seccomp=unconfined -v /sys/fs/cgroup:/sys/fs/cgroup:rw --cgroupns=host --tmpfs /run --tmpfs /tmp -v /home/hetongocr/root:/root -v /home/hetongocr/opt:/opt/ --gpus '"device=6"' cuda-systemd-sshd
+
+docker run -d --restart always --net=host --name cuda-systemd-ocr --cap-add=SYS_ADMIN --cap-add=SYS_CHROOT --cap-add=NET_ADMIN --security-opt seccomp=unconfined -v /sys/fs/cgroup:/sys/fs/cgroup:rw --cgroupns=host --tmpfs /run --tmpfs /tmp --gpus '"device=6"' -v /home/hetongocr/root:/root -v /home/hetongocr/opt:/opt/ cuda-systemd-sshd
