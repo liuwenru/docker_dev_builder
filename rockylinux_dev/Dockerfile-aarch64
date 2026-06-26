@@ -1,21 +1,15 @@
 # syntax=docker/dockerfile:1
 FROM rockylinux/rockylinux:9.6.20250531 AS base
 
-RUN dnf install -y dnf-plugins-core epel-release && \
-  dnf config-manager --set-enabled crb && \
-  dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo && \
-  dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin && \
-  dnf clean all
 
 RUN --mount=type=cache,target=/var/cache/dnf \
-  yum -y install openssh openssh-server openssh-clients util-linux-user procps-ng-devel fuse-sshfs && \
-  yum clean all
+  sed -e 's|^mirrorlist=|#mirrorlist=|g' -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.aliyun.com/rockylinux|g' -i.bak /etc/yum.repos.d/[Rr]ocky*.repo && dnf install epel-release -y && dnf clean all  && yum -y install openssh openssh-server openssh-clients util-linux-user fuse-sshfs
 
 RUN --mount=type=cache,target=/var/cache/dnf \
   yum -y install \
   vim gcc gcc-c++ perl-Encode* perl-Data-Dumper perl-Text-Unidecode perl-libintl \
-  autoconf automake libtool file bison texinfo ncurses-* make gperf rsync \
-  gettext-devel wget patch CUnit-devel net-tools iproute gdb libcurl-devel \
+  autoconf automake libtool file bison  ncurses-* make gperf rsync \
+  gettext-devel wget patch CUnit net-tools iproute gdb libcurl-devel \
   zlib-devel glibc-langpack-en && \
   yum clean all
 
@@ -23,19 +17,19 @@ ENV LANG=en_US.utf-8
 ENV LC_ALL=en_US.utf-8
 
 ###############################    Devtools Env    ###############################
-FROM base AS devtools
+
 COPY devinstaller /opt/devinstaller
 
 RUN bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
 
-FROM devtools AS cdev
+
 RUN bash /opt/devinstaller/cinstall.sh
 ENV PATH=/usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
 
 RUN bash /opt/devinstaller/luainstaller.sh
 
-FROM cdev AS golangdev
+
 ENV GO111MODULE=on
 ENV GOPATH=/opt/goworkspace
 ENV PATH=/opt/go/bin:$GOPATH/bin:$PATH
@@ -54,31 +48,38 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
   go install mvdan.cc/sh/v3/cmd/gosh@latest && \
   go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
-FROM golangdev AS nodedev
+
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
-FROM nodedev AS pydev
-RUN bash /opt/devinstaller/pyinstaller.sh
 
-FROM pydev AS javadev
+RUN bash /opt/devinstaller/pyinstaller.sh
+ENV PATH=/opt/python312/bin:$PATH
+
+
+
+
 RUN bash /opt/devinstaller/javainstaller.sh
+
 
 ENV JAVA_HOME=/usr/local/jdk
 ENV ANT_HOME=/usr/local/ant
 ENV MAVEN_HOME=/usr/local/maven
 ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
 
-FROM javadev AS vscodeserver
-RUN bash /opt/devinstaller/download-vs-code.sh "linux" "arm64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
 
-RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
-      ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
-    done
+RUN bash /opt/devinstaller/dockerinstaller.sh
+
+# FROM dockerdev AS vscodeserver
+# RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
+
+# RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
+#       ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
+#     done
 
 RUN rm -rf /tmp/* /var/cache/yum/*
 RUN chsh -s /usr/bin/bash
 
-COPY fedora_dev/start.sh /start.sh
+COPY start.sh /start.sh
 RUN chmod +x /start.sh /tini
 
 ENTRYPOINT ["/tini", "-g", "--"]
