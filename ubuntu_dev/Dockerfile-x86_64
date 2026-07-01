@@ -7,32 +7,31 @@ ENV LANG=en_US.utf8
 ENV LC_ALL=en_US.utf-8
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    sed -i 's@/archive.ubuntu.com/@/mirrors.aliyun.com/@g' /etc/apt/sources.list && \
-    sed -i 's@/security.ubuntu.com/@/mirrors.aliyun.com/@g' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
-        build-essential gdb iproute2 libcurl4-openssl-dev gettext \
-        autotools-dev autoconf automake unzip openssh-server && \
-    localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 && \
-    rm -rf /var/lib/apt/lists/*
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  sed -i 's@/archive.ubuntu.com/@/mirrors.aliyun.com/@g' /etc/apt/sources.list && \
+  sed -i 's@/security.ubuntu.com/@/mirrors.aliyun.com/@g' /etc/apt/sources.list && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
+  build-essential gdb iproute2 libcurl4-openssl-dev gettext \
+  autotools-dev autoconf automake unzip openssh-server && \
+  echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8 && \
+  rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /var/run/sshd && \
-    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    echo 'root:liuwenru' | chpasswd && \
-    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
-    echo "export VISIBLE=now" >> /etc/profile
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+  echo 'root:liuwenru' | chpasswd && \
+  sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+  echo "export VISIBLE=now" >> /etc/profile
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y --no-install-recommends x11vnc xvfb firefox gedit-dev xdotool && \
-    rm -rf /var/lib/apt/lists/*
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get update && \
+  apt-get install -y --no-install-recommends x11vnc xvfb firefox gedit-dev xdotool && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /root/.vnc && \
-    touch /root/.vnc/passwd && \
-    x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
+  touch /root/.vnc/passwd && \
+  x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
 
 ENV DISPLAY=":1"
 
@@ -58,16 +57,16 @@ ENV PATH=/opt/go/bin:$GOPATH/bin:$PATH
 RUN bash /opt/devinstaller/golanginstaller.sh
 
 RUN go install github.com/ramya-rao-a/go-outline@latest && \
-    go install github.com/cweill/gotests/gotests@latest && \
-    go install github.com/fatih/gomodifytags@latest && \
-    go install github.com/josharian/impl@latest && \
-    go install github.com/haya14busa/goplay/cmd/goplay@latest && \
-    go install github.com/go-delve/delve/cmd/dlv@latest && \
-    go install honnef.co/go/tools/cmd/staticcheck@latest && \
-    go install golang.org/x/tools/gopls@latest && \
-    go install github.com/jstemmer/gotags@latest && \
-    go install mvdan.cc/sh/v3/cmd/gosh@latest && \
-    go install mvdan.cc/sh/v3/cmd/shfmt@latest
+  go install github.com/cweill/gotests/gotests@latest && \
+  go install github.com/fatih/gomodifytags@latest && \
+  go install github.com/josharian/impl@latest && \
+  go install github.com/haya14busa/goplay/cmd/goplay@latest && \
+  go install github.com/go-delve/delve/cmd/dlv@latest && \
+  go install honnef.co/go/tools/cmd/staticcheck@latest && \
+  go install golang.org/x/tools/gopls@latest && \
+  go install github.com/jstemmer/gotags@latest && \
+  go install mvdan.cc/sh/v3/cmd/gosh@latest && \
+  go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
 FROM golangdev AS nodedev
 RUN bash /opt/devinstaller/nodejsinstaller.sh
@@ -87,8 +86,8 @@ FROM javadev AS vscodeserver
 RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
 
 RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
-      ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
-    done
+  ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
+  done
 
 RUN rm -rf /tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 RUN chsh -s /usr/bin/bash

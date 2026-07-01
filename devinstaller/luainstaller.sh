@@ -1,31 +1,15 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+set -euo pipefail
 # install lua
 
-ostype=$(cat /etc/os-release | grep Ubuntu | wc -l)
-if [[ ${ostype} -ge 1 ]]; then
-  apt-get install -y --no-install-recommends \
-    ca-certificates \
-    curl \
-    gcc \
-    libc6-dev \
-    make \
-    libreadline-dev \
-    dirmngr \
-    gnupg \
-    unzip
+if grep -qi ubuntu /etc/os-release; then
+  apt-get install -y --no-install-recommends ca-certificates curl gcc libc6-dev make libreadline-dev dirmngr gnupg unzip
+elif command -v dnf >/dev/null 2>&1; then
+  dnf -y --allowerasing install ca-certificates curl gcc glibc-devel make readline-devel dirmngr gnupg2 unzip
 else
-  yum -y install \
-    ca-certificates \
-    curl \
-    gcc \
-    glibc-devel \
-    make \
-    readline-devel \
-    dirmngr \
-    gnupg2 \
-    unzip
+  yum -y --allowerasing install ca-certificates curl gcc glibc-devel make readline-devel dirmngr gnupg2 unzip
 fi
+
 curl -k -L -o /tmp/lua.tar.gz "https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/lua-5.4.3.tar.gz"
 mkdir /tmp/lua
 tar -xf /tmp/lua.tar.gz -C /tmp/lua --strip-components=1

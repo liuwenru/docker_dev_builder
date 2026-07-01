@@ -7,7 +7,6 @@ donjayamanne.python-extension-pack
 EditorConfig.EditorConfig
 esbenp.prettier-vscode
 felipecaputo.vscode-go-gvm
-foxundermoon.shell-format
 GitHub.remotehub
 golang.go
 Gruntfuggly.todo-tree

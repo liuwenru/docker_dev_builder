@@ -63,84 +63,84 @@ Options
 
 # Get the latest VS Code commit sha.
 get_latest_release() {
-    platform=${1}
-    arch=${2}
-    bin_type="${3}"
+  platform=${1}
+  arch=${2}
+  bin_type="${3}"
 
-    # Grab the first commit SHA since as this script assumes it will be the
-    # latest.
-    commit_id=$(curl --silent "https://update.code.visualstudio.com/api/commits/${bin_type}/${platform}-${arch}" | sed s'/^\["\([^"]*\).*$/\1/')
+  # Grab the first commit SHA since as this script assumes it will be the
+  # latest.
+  commit_id=$(curl --silent "https://update.code.visualstudio.com/api/commits/${bin_type}/${platform}-${arch}" | sed s'/^\["\([^"]*\).*$/\1/')
 
-    # These work:
-    # https://update.code.visualstudio.com/api/commits/stable/win32-x64
-    # https://update.code.visualstudio.com/api/commits/stable/linux-x64
-    # https://update.code.visualstudio.com/api/commits/insider/linux-x64
+  # These work:
+  # https://update.code.visualstudio.com/api/commits/stable/win32-x64
+  # https://update.code.visualstudio.com/api/commits/stable/linux-x64
+  # https://update.code.visualstudio.com/api/commits/insider/linux-x64
 
-    # these do not work:
-    # https://update.code.visualstudio.com/api/commits/stable/darwin-x64
-    # https://update.code.visualstudio.com/api/commits/stable/linux-alpine
-    printf "%s" "${commit_id}"
+  # these do not work:
+  # https://update.code.visualstudio.com/api/commits/stable/darwin-x64
+  # https://update.code.visualstudio.com/api/commits/stable/linux-alpine
+  printf "%s" "${commit_id}"
 }
 
 # You can test the code binary is installed in the correct location by
 # making a tunnel to vscode.dev with:
 # ~/.vscode-server/code tunnel --accept-server-license-terms
 install_cli() {
-    echo "setup directories:"
-    # Make the directories where the VS Code will search. There may be others not
-    # listed here.
-    # NOTE: VS Code will runas the logged in user, so ensure they have
-    #       read/write to the following directories
-    mkdir -vp ~/.vscode-server
-    echo "done"
+  echo "setup directories:"
+  # Make the directories where the VS Code will search. There may be others not
+  # listed here.
+  # NOTE: VS Code will runas the logged in user, so ensure they have
+  #       read/write to the following directories
+  mkdir -vp ~/.vscode-server
+  echo "done"
 
-    # Extract the tarball to the right location.
-    printf "%s" "extracting ${archive}..."
-    tar -xz -C ~/.vscode-server --no-same-owner -f "/tmp/${archive}"
-    echo "done"
+  # Extract the tarball to the right location.
+  printf "%s" "extracting ${archive}..."
+  tar -xz -C ~/.vscode-server --no-same-owner -f "/tmp/${archive}"
+  echo "done"
 
-    # Add symlinks
-    printf "%s" "setup symlinks..."
-    ln -s ~/.vscode-server/code ~/.vscode-server/code-"${commit_sha}"
-    ln -s "${HOME}"/.vscode-server/code ~/code
-    echo "done"
+  # Add symlinks
+  printf "%s" "setup symlinks..."
+  ln -s ~/.vscode-server/code ~/.vscode-server/code-"${commit_sha}"
+  ln -s "${HOME}"/.vscode-server/code ~/code
+  echo "done"
 }
 
 install_server() {
-    echo "setup directories:"
-    # Make the directories where the VS Code will search. There may be others not
-    # listed here.
-    # NOTE: VS Code will runas the logged in user, so ensure they have
-    #       read/write to the following directories
-    mkdir -vp ~/.vscode-server/bin/"${commit_sha}"
-    # VSCode Requirements for pre-installing extensions
-    mkdir -vp ~/.vscode-server/extensions
-    # found this in the VSCode remote extension output when connecting to an existing container
-    mkdir -vp ~/.vscode-server/extensionsCache
-    # This should handle installs for https://vscode.dev/
-    mkdir -vp ~/.vscode/cli/servers/Stable-"${commit_sha}"
-    mkdir -vp ~/.vscode-server/cli/servers/Stable-"${commit_sha}"
-    echo "done"
+  echo "setup directories:"
+  # Make the directories where the VS Code will search. There may be others not
+  # listed here.
+  # NOTE: VS Code will runas the logged in user, so ensure they have
+  #       read/write to the following directories
+  mkdir -vp ~/.vscode-server/bin/"${commit_sha}"
+  # VSCode Requirements for pre-installing extensions
+  mkdir -vp ~/.vscode-server/extensions
+  # found this in the VSCode remote extension output when connecting to an existing container
+  mkdir -vp ~/.vscode-server/extensionsCache
+  # This should handle installs for https://vscode.dev/
+  mkdir -vp ~/.vscode/cli/servers/Stable-"${commit_sha}"
+  mkdir -vp ~/.vscode-server/cli/servers/Stable-"${commit_sha}"
+  echo "done"
 
-    # Extract the tarball to the right location.
-    printf "%s" "extracting ${archive}..."
-    tar -xz -C ~/.vscode-server/bin/"${commit_sha}" --strip-components=1 --no-same-owner -f "/tmp/${archive}"
-    echo "done"
+  # Extract the tarball to the right location.
+  printf "%s" "extracting ${archive}..."
+  tar -xz -C ~/.vscode-server/bin/"${commit_sha}" --strip-components=1 --no-same-owner -f "/tmp/${archive}"
+  echo "done"
 
-    # Add symlinks
-    printf "%s" "setup symlinks..."
-    ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode-server/bin/default_version
-    ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode/cli/servers/Stable-"${commit_sha}"/server
-    ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode-server/cli/servers/Stable-"${commit_sha}"/server
-    ln -s ~/.vscode-server/bin/"${commit_sha}"/bin/code-server ~/code-server
-    echo "done"
+  # Add symlinks
+  printf "%s" "setup symlinks..."
+  ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode-server/bin/default_version
+  ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode/cli/servers/Stable-"${commit_sha}"/server
+  ln -s ~/.vscode-server/bin/"${commit_sha}" ~/.vscode-server/cli/servers/Stable-"${commit_sha}"/server
+  ln -s ~/.vscode-server/bin/"${commit_sha}"/bin/code-server ~/code-server
+  echo "done"
 }
 
 ## Parse command line options, proper
-getopt --test > /dev/null && true
+getopt --test >/dev/null && true
 if [ $? -ne 4 ]; then
-    echo 'sorry, getopts --test` failed in this environment'
-    exit 1
+  echo 'sorry, getopts --test` failed in this environment'
+  exit 1
 fi
 
 LONG_OPTS=help,insider,dump-sha,cli,alpine,extensions:,use-commit:
@@ -158,100 +158,106 @@ IS_ALPINE=0
 USE_COMMIT=""
 
 while [ true ]; do
-    case ${1} in
-        --insider)
-            BUILD="insider"
-            shift
-            ;;
-        --dump-sha)
-            DUMP_COMMIT_SHA="yes"
-            shift
-            ;;
-        --cli)
-            BIN_TYPE="cli"
-            shift
-            ;;
-        --alpine)
-            IS_ALPINE=1
-            shift
-            ;;
-        --extensions)
-            EXTENSIONS="${2}"
-            shift 2
-            ;;
-        --use-commit)
-            USE_COMMIT="${2}"
-            shift 2
-            ;;
-        -h|--help)
-            echo "${usage}"
-            exit 0
-            ;;
-        --) shift; break;;
-        *) echo "unknown option '${1}'"; exit 1;;
-    esac
+  case ${1} in
+  --insider)
+    BUILD="insider"
+    shift
+    ;;
+  --dump-sha)
+    DUMP_COMMIT_SHA="yes"
+    shift
+    ;;
+  --cli)
+    BIN_TYPE="cli"
+    shift
+    ;;
+  --alpine)
+    IS_ALPINE=1
+    shift
+    ;;
+  --extensions)
+    EXTENSIONS="${2}"
+    shift 2
+    ;;
+  --use-commit)
+    USE_COMMIT="${2}"
+    shift 2
+    ;;
+  -h | --help)
+    echo "${usage}"
+    exit 0
+    ;;
+  --)
+    shift
+    break
+    ;;
+  *)
+    echo "unknown option '${1}'"
+    exit 1
+    ;;
+  esac
 done
 
 # Platform is required.
 if [ "$#" -lt 1 ]; then
-    echo "please specify which platform version of VS Code to install\nacceptable values are linux, alpine, win32, or darwin"
-    exit 1
+  echo "please specify which platform version of VS Code to install\nacceptable values are linux, alpine, win32, or darwin"
+  exit 1
 fi
 
 if [ "$#" -lt 2 ]; then
-    echo "missing required architecture argument <ARCH> (arm64|armhf|x64)"
-    exit 1
+  echo "missing required architecture argument <ARCH> (arm64|armhf|x64)"
+  exit 1
 fi
 
 case ${1} in
-    # When downloading code server for Alpine, you must pass PLATFORM=linux and ARCH=alpine.
-    # Setting PLATFORM=alpine is OK here for downloading code CLI.
-    alpine|darwin|linux|win32)
-      PLATFORM="${1}"
-      ;;
+# When downloading code server for Alpine, you must pass PLATFORM=linux and ARCH=alpine.
+# Setting PLATFORM=alpine is OK here for downloading code CLI.
+alpine | darwin | linux | win32)
+  PLATFORM="${1}"
+  ;;
 esac
 
 case ${2} in
-    arm64|armhf|x64)
-      ARCH="${2}"
-      ;;
+arm64 | armhf | x64)
+  ARCH="${2}"
+  ;;
 esac
 
 # When non specified, then pull from the OS.
 if [ -z "${ARCH}" ]; then
-    U_NAME=$(uname -m)
+  U_NAME=$(uname -m)
 
-    if [ "${U_NAME}" = "aarch64" ]; then
-        ARCH="arm64"
-    elif [ "${U_NAME}" = "x86_64" ]; then
-        ARCH="x64"
-    elif [ "${U_NAME}" = "armv7l" ]; then
-        ARCH="armhf"
-    fi
+  if [ "${U_NAME}" = "aarch64" ]; then
+    ARCH="arm64"
+  elif [ "${U_NAME}" = "x86_64" ]; then
+    ARCH="x64"
+  elif [ "${U_NAME}" = "armv7l" ]; then
+    ARCH="armhf"
+  fi
 fi
 
 # Patch things when downloading VS Code Server for Alpine.
 if [ "${BIN_TYPE}" = "server" -a ${IS_ALPINE} -eq 1 ]; then
-    echo "we need to hard set PLATFORM and ARCH for Alpine Musl"
-    PLATFORM="linux"
-    ARCH="alpine" # Alpine is NOT an Arch but a flavor of Linux, oh well.
+  echo "we need to hard set PLATFORM and ARCH for Alpine Musl"
+  PLATFORM="linux"
+  ARCH="alpine" # Alpine is NOT an Arch but a flavor of Linux, oh well.
 fi
 
 if [ -n "${USE_COMMIT}" ]; then
-    commit_sha="${USE_COMMIT}"
+  commit_sha="${USE_COMMIT}"
 else
-    # We hard-code this because all but a few options returns a 404.
-    commit_sha=$(get_latest_release "win32" "x64" "${BUILD}")
+  # We hard-code this because all but a few options returns a 404.
+  commit_sha=$(get_latest_release "win32" "x64" "${BUILD}")
 fi
 
 if [ -z "${commit_sha}" ]; then
-    echo "could not get the VS Code latest commit sha, exiting"
-    exit 1
+  echo "could not get the VS Code latest commit sha, exiting"
+  exit 1
 fi
 
 if [ "${DUMP_COMMIT_SHA}" = "yes" ]; then
-    echo "${commit_sha}"
-    exit 0
+  echo "${commit_sha}"
+  exit 0
 fi
 
 echo "attempting to download and pre-install VS Code ${BIN_TYPE} version '${commit_sha}'"
@@ -267,19 +273,19 @@ echo "done"
 
 # Based on the binary type chosen, perform the installation.
 if [ "${BIN_TYPE}" = "cli" ]; then
-    install_cli
+  install_cli
 else
-    install_server
+  install_server
 fi
 
 echo "VS Code server pre-install completed"
 echo "downloading extensions..."
 
 if [ -n "${EXTENSIONS}" ]; then
-    ## Auto-accept license terms and then install the extensions, by force if they already exist.
-    for extension in ${EXTENSIONS}; do
-        ~/code-server --accept-server-license-terms --force --install-extension "${extension}"
-    done
+  ## Auto-accept license terms and then install the extensions, by force if they already exist.
+  for extension in ${EXTENSIONS}; do
+    ~/code-server --accept-server-license-terms --force --install-extension "${extension}"
+  done
 fi
 
 echo "extensions installation complete"
