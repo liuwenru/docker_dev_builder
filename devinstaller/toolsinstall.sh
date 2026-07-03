@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # set -euo pipefail
-
+shopt -s expand_aliases
 # bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 
 if [[ $(uname -m) == "x86_64" ]]; then
@@ -8,7 +8,9 @@ if [[ $(uname -m) == "x86_64" ]]; then
 elif [[ $(uname -m) == "aarch64" ]]; then
   cp /opt/devinstaller/bin/tini-static-arm64 /tini
 fi
-chmod +x /tini
+cp /opt/devinstaller/bin/entrypoint.sh /entrypoint.sh
+chmod +x /tini 
+chmod +x /entrypoint.sh
 
 # install systemd等
 if grep -qi ubuntu /etc/os-release; then
@@ -21,26 +23,105 @@ fi
 
 # bash tools
 
-curl -k -L -o /tmp/bashit.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/bashit/bashit-v3.0.3.tar.gz
-mkdir ~/.bash_it
-tar -zxvf /tmp/bashit.tar.gz --strip-components 1 -C ~/.bash_it
-~/.bash_it/install.sh --silent --append-to-config
-if [[ $(uname -m) == "x86_64" ]]; then
-  curl -k -L -o /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_amd64.tar.gz
+if [[ $SHELL == "/bin/bash" ]]; then set +o history; fi
+if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
+if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
+if [[ ! -f /usr/bin/busybox ]]; then downloader /usr/bin/busybox https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/busybox/busybox_$(uname -m) && chmod +x /usr/bin/busybox; fi
+if [[ -f /usr/bin/busybox ]]; then chmod +x /usr/bin/busybox && alias tar='busybox tar' && alias unzip='busybox unzip'; fi
+if [[ $(uname -m) == "x86_64" ]];then
+  downloader /tmp/starship.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/starship/starship-x86_64-unknown-linux-musl.tar.gz
 elif [[ $(uname -m) == "aarch64" ]]; then
-  curl -k -L -o /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_arm64.tar.gz
+  downloader /tmp/starship.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/starship/starship-aarch64-unknown-linux-musl.tar.gz
 fi
-mkdir ~/.fzf
-curl -k -L -o /tmp/fzfinstall.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0.tar.gz
-tar --strip-components=1 -zxvf /tmp/fzfinstall.tar.gz -C ~/.fzf/
-tar -zxf /tmp/fzf.tar.gz -C ~/.fzf/bin
-cd ~/.fzf && ./install --all
-echo "alias ll='ls -lh'" >>~/.bashrc
+tar -zxvf /tmp/starship.tar.gz -C /usr/bin/
+echo 'eval "$(starship init bash)"' >> ~/.bashrc
+mkdir -p ~/.config && cat <<'EOF' >~/.config/starship.toml
+# ~/.config/starship.toml
+"$schema" = 'https://starship.rs/config-schema.json'
 
-sed -i '/export BASH_IT="\/root\/.bash_it"/a export THEME_SHOW_CLOCK_CHAR=false' ~/.bashrc
-sed -i 's/export SCM_CHECK=true/export SCM_CHECK=false/g' ~/.bashrc
+# 自定义 prompt 格式，只保留需要的模块
+format = """
+[$username](bold yellow)[@](white)[$localip](bold cyan) \
+[$time](bold green) [$cmd_duration](bold yellow)\
+$line_break\
+ [$directory](bold blue) ❯ """
+
+add_newline = false
+
+# 登录用户
+[username]
+show_always = true
+format = '[$user]($style)'
+style_user = 'bold yellow'
+style_root = 'bold red'
+
+# 主机 IP 地址（本地 IP）
+[localip]
+ssh_only = false
+disabled = false
+format = '[$localipv4]($style)'
+style = 'bold cyan'
+
+# 当前路径
+[directory]
+format = '[$path]($style)[$read_only]($read_only_style) '
+style = 'bold blue'
+truncation_length = 3
+truncation_symbol = '…/'
+use_logical_path = false
+
+# 命令执行时间
+[cmd_duration]
+min_time = 0          # 所有命令都显示耗时（默认 2000ms 才显示）
+format = 'TOOK: [$duration]($style) '
+style = 'bold yellow'
+
+# 当前时间
+[time]
+disabled = false
+format = 'TIME: [$time]($style)'
+time_format = '%Y-%m-%d-%H:%M:%S'
+style = 'bold green'
+
+# 禁用不需要的模块（加速 prompt 渲染）
+[git_branch]
+disabled = true
+
+[git_status]
+disabled = true
+
+[package]
+disabled = true
+EOF
+# if [[ $(uname -m) == "x86_64" ]];then
+#   downloader /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_amd64.tar.gz
+# elif [[ $(uname -m) == "aarch64" ]]; then
+#   downloader /tmp/fzf.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0-linux_arm64.tar.gz 
+# fi
+# mkdir ~/.fzf
+# downloader /tmp/fzfinstall.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/fzf/fzf-0.64.0.tar.gz
+# tar --strip-components=1 -zxvf /tmp/fzfinstall.tar.gz -C ~/.fzf/
+# tar -zxf /tmp/fzf.tar.gz -C ~/.fzf/bin 
+# cd ~/.fzf && ./install --all
+
+if [[ $(uname -m) == "x86_64" ]];then
+  downloader /tmp/atuin.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/atuin/atuin-x86_64-unknown-linux-musl.tar.gz
+elif [[ $(uname -m) == "aarch64" ]]; then
+  downloader /tmp/atuin.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/atuin/atuin-aarch64-unknown-linux-musl.tar.gz 
+fi
+tar --strip-components=1 -zxvf /tmp/atuin.tar.gz -C /usr/bin/ atuin-$(uname -m)-unknown-linux-musl/atuin && rm -rf /tmp/atuin.tar.gz
+downloader /tmp/bash-preexec.sh https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/atuin/bash-preexec.sh && mv /tmp/bash-preexec.sh ~/.bash-preexec.sh && echo '[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh' >> ~/.bashrc && rm -rf /tmp/bash-preexec.sh
+echo 'eval "$(atuin init bash --disable-up-arrow --disable-ai)"' >> ~/.bashrc
+mkdir -p ~/.config/atuin && cat <<'EOF' >~/.config/atuin/config.toml
+auto_sync = false
+sync_address = "https://localhost"
+enter_accept = false
+EOF
+echo "alias ll='ls -lh'" >> ~/.bashrc
 source ~/.bashrc
-if [[ $SHELL == "/bin/bash" ]]; then set -o history; fi
+if [[ $SHELL == "/bin/bash" ]];then set -o history; fi
+
+
 
 # install git
 curl -k -L -o /tmp/git.tar.gz https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.44.0.tar.gz

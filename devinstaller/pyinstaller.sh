@@ -7,6 +7,10 @@
 # ============================  ================================
 # set -euo pipefail
 
+# ---------- 并行构建配置 ----------
+PARALLEL_JOBS="${PARALLEL_JOBS:-2}"
+PYTHON_INSTALL_LOG_DIR="${PYTHON_INSTALL_LOG_DIR:-/tmp}"
+
 # ---------- 支持的版本 ----------
 PYTHON_VERSIONS=("3.12.11" "3.13.5" "3.14.6")
 declare -A PYTHON_TARBALL_URLS=(
@@ -43,7 +47,8 @@ install_python() {
   short_ver="$(echo "${version}" | cut -d. -f1,2)" # 3.12
   prefix="/opt/python${short_ver//./}"             # /opt/python312
   build_dir="/tmp/python-build-${version}"
-  jobs="$(nproc)"
+  jobs=$(( $(nproc) / PARALLEL_JOBS ))
+  (( jobs < 1 )) && jobs=1
   tarball="${build_dir}/python.tgz"
 
   _check_env
@@ -80,7 +85,9 @@ install_python() {
 
   # 3. 编译
   _log "make -j${jobs}"
-  make -j"${jobs}"
+  export CFLAGS="-O3 -flto=auto"
+  export LDFLAGS="-flto=auto"
+  make -j"${jobs}" PROFILE_TASK='-m test --pgo -j0'
 
   # 4. 安装
   _log "make altinstall"
@@ -107,12 +114,54 @@ install_python() {
   echo "使用: python${short_ver} / pip${short_ver}"
 }
 
-# ---------- 批量安装所有支持的版本 ----------
+# ---------- 单版本带前缀输出 + 日志落盘 ----------
+_install_one_with_prefix() {
+  local v="$1"
+  local log="${PYTHON_INSTALL_LOG_DIR}/pyinstall-${v}.log"
+  : > "${log}"
+  install_python "${v}" 2>&1 | \
+  while IFS= read -r line; do
+    printf '[%s] %s\n' "${v}" "${line}"
+  done | tee -a "${log}"
+  return "${PIPESTATUS[0]}"
+}
+
+# ---------- 批量安装所有支持的版本（并行） ----------
 install_all_pythons() {
+  local max="${PARALLEL_JOBS}"
+  local pids=() v_for_pid=() failed=()
+
   for v in "${PYTHON_VERSIONS[@]}"; do
-    _log "========== 安装 ${v} =========="
-    install_python "${v}"
+    _install_one_with_prefix "${v}" &
+    pids+=($!)
+    v_for_pid+=("${v}")
+    if (( ${#pids[@]} >= max )); then
+      wait "${pids[0]}" || failed+=("${v_for_pid[0]}")
+      pids=("${pids[@]:1}")
+      v_for_pid=("${v_for_pid[@]:1}")
+    fi
   done
+
+  for i in "${!pids[@]}"; do
+    wait "${pids[$i]}" || failed+=("${v_for_pid[$i]}")
+  done
+
+  echo ""
+  echo "============================================"
+  echo " Python 安装汇总"
+  echo "============================================"
+  for v in "${PYTHON_VERSIONS[@]}"; do
+    if [[ " ${failed[*]} " == *" ${v} "* ]]; then
+      echo " [FAIL] ${v}  日志: ${PYTHON_INSTALL_LOG_DIR}/pyinstall-${v}.log"
+    else
+      echo " [ OK ] ${v}"
+    fi
+  done
+  echo "============================================"
+
+  if (( ${#failed[@]} > 0 )); then
+    return 1
+  fi
 }
 
 # ---------- 直接执行入口 ----------
