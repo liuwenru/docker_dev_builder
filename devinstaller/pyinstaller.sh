@@ -50,14 +50,28 @@ install_python() {
   jobs=$(( $(nproc) / PARALLEL_JOBS ))
   (( jobs < 1 )) && jobs=1
   tarball="${build_dir}/python.tgz"
+  local max_age_days="${PYTHON_MAX_BUILD_AGE_DAYS:-7}"
+  local ts_file="${prefix}/.build_timestamp"
 
   _check_env
 
-  # 已装则跳过 (可注释掉强制重装)
+  # 已装则按时间戳判断: < max_age_days 跳过, 否则强制重编
   if [[ -x "${prefix}/bin/python${short_ver}" ]]; then
-    _log "${version} 已安装在 ${prefix}, 跳过 (删掉目录可强制重装)"
-    "${prefix}/bin/python${short_ver}" --version
-    return 0
+    if [[ -f "${ts_file}" ]]; then
+      local build_time now age_days
+      build_time="$(stat -c %Y "${ts_file}" 2>/dev/null || echo 0)"
+      now="$(date +%s)"
+      age_days=$(( (now - build_time) / 86400 ))
+      if (( age_days < max_age_days )); then
+        _log "${version} 已安装, 构建于 ${age_days} 天前 (<${max_age_days}), 跳过"
+        "${prefix}/bin/python${short_ver}" --version
+        return 0
+      fi
+      _log "${version} 已 ${age_days} 天未更新 (>=${max_age_days}), 强制重编"
+    else
+      _log "${version} 已安装但无时间戳, 强制重编"
+    fi
+    rm -rf "${prefix}"
   fi
 
   # 1. 准备源码
@@ -76,6 +90,8 @@ install_python() {
 
   # 2. 配置
   _log "./configure (prefix=${prefix})"
+  export CFLAGS="-O3 -flto=auto -fno-fat-lto-objects"
+  export LDFLAGS="-flto=auto -fuse-ld=mold"
   ./configure \
     --prefix="${prefix}" \
     --enable-optimizations \
@@ -85,13 +101,14 @@ install_python() {
 
   # 3. 编译
   _log "make -j${jobs}"
-  export CFLAGS="-O3 -flto=auto"
-  export LDFLAGS="-flto=auto"
   make -j"${jobs}" PROFILE_TASK='-m test --pgo -j0'
 
   # 4. 安装
   _log "make altinstall"
   make altinstall
+
+  # 4.1 写入构建时间戳
+  date +%s > "${ts_file}"
 
   # 5. 注册动态库
   _log "注册 ${prefix}/lib 到 ldconfig"

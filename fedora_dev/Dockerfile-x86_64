@@ -7,7 +7,7 @@ RUN curl -o /etc/yum.repos.d/fedora.repo http://mirrors.aliyun.com/repo/fedora.r
     dnf clean all
 
 RUN --mount=type=cache,target=/var/cache/dnf \
-    dnf -y install openssh openssh-server openssh-clients && \
+    dnf -y install openssh openssh-server openssh-clients ccache mold && \
     dnf clean all
 
 RUN --mount=type=cache,target=/var/cache/dnf \
@@ -19,6 +19,14 @@ RUN --mount=type=cache,target=/var/cache/dnf \
 
 ENV LANG=en_US.utf-8
 ENV LC_ALL=en_US.utf-8
+
+# ccache + mold 全局生效
+ENV CC="ccache gcc" \
+    CXX="ccache g++" \
+    CCACHE_DIR=/root/.ccache \
+    CCACHE_SLOPPINESS="time_macros,include_file_mtime,file_macro,locale,clang_index_store" \
+    CCACHE_BASEDIR=/tmp
+ENV PATH=/usr/libexec/ccache:$PATH
 
 ###############################    Devtools Env    ###############################
 
@@ -57,7 +65,10 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 
-RUN bash /opt/devinstaller/pyinstaller.sh
+RUN --mount=type=cache,target=/root/.ccache,sharing=locked \
+  rm -rf /opt/python* 2>/dev/null || true && \
+  ccache -M 20G && \
+  bash /opt/devinstaller/pyinstaller.sh
 
 
 RUN bash /opt/devinstaller/javainstaller.sh
@@ -68,11 +79,11 @@ ENV MAVEN_HOME=/usr/local/maven
 ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
 
 
-RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
+# RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
 
-RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
-      ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
-    done
+# RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
+#       ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
+#     done
 
 RUN rm -rf /tmp/* /var/cache/dnf/*
 RUN chsh -s /usr/bin/bash

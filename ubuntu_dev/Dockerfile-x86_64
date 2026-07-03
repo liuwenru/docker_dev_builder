@@ -14,7 +14,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
   locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
   build-essential gdb iproute2 libcurl4-openssl-dev gettext \
-  autotools-dev autoconf automake unzip openssh-server git bsdextrautils && \
+  autotools-dev autoconf automake unzip openssh-server git bsdextrautils \
+  ccache mold && \
   echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 
@@ -34,6 +35,14 @@ RUN mkdir /root/.vnc && \
   x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
 
 ENV DISPLAY=":1"
+
+# ccache + mold 全局生效
+ENV CC="ccache gcc" \
+    CXX="ccache g++" \
+    CCACHE_DIR=/root/.ccache \
+    CCACHE_SLOPPINESS="time_macros,include_file_mtime,file_macro,locale,clang_index_store" \
+    CCACHE_BASEDIR=/tmp
+ENV PATH=/usr/libexec/ccache:$PATH
 
 ###############################    Devtools Env    ###############################
 
@@ -72,7 +81,10 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 
-RUN bash /opt/devinstaller/pyinstaller.sh
+RUN --mount=type=cache,target=/root/.ccache,sharing=locked \
+  rm -rf /opt/python* 2>/dev/null || true && \
+  ccache -M 20G && \
+  bash /opt/devinstaller/pyinstaller.sh
 
 
 RUN bash /opt/devinstaller/javainstaller.sh
@@ -83,11 +95,11 @@ ENV MAVEN_HOME=/usr/local/maven
 ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
 
 
-RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
+# RUN bash /opt/devinstaller/download-vs-code.sh "linux" "x64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
 
-RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
-  ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
-  done
+# RUN for ext in $(cat /opt/devinstaller/vscode-plugin-list.txt); do \
+#   ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
+#   done
 
 RUN rm -rf /tmp/* /var/cache/apt/* /var/lib/apt/lists/*
 RUN chsh -s /usr/bin/bash
