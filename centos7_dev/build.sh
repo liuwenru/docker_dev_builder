@@ -11,8 +11,13 @@ if [[ -d devinstaller ]]; then
 fi
 cp -r ../devinstaller ./devinstaller
 
+IMAGE_NAME="liuwenru/centos_dev"
+BUILD_DATE="$(date +%Y%m%d-%H%M)"
+
 if [[ $(uname -m) == "x86_64" ]]; then
-  docker build --network=host -f Dockerfile-x86_64 -t liuwenru/centos_dev:$(uname -m) .
+  docker build --network=host -f Dockerfile-x86_64 \
+    -t "${IMAGE_NAME}:x86_64-${BUILD_DATE}" .
 elif [[ $(uname -m) == "aarch64" ]]; then
-  docker build --network=host -f Dockerfile-aarch64 -t liuwenru/centos_dev:$(uname -m) .
+  docker build --network=host -f Dockerfile-aarch64 \
+    -t "${IMAGE_NAME}:aarch64-${BUILD_DATE}" .
 fi

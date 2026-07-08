@@ -2,10 +2,9 @@
 set -e # 顺便加上，遇到错误立即退出
 
 # 说明:
-#   - apt 包缓存和 ccache(/root/.ccache) 由 Docker BuildKit 的
-#     --mount=type=cache 自动管理, 缓存在 buildkit 端(~/.cache/buildkit/),
-#     多次构建间复用, 无需本脚本处理.
-#   - 首次构建会做全量编译, 后续构建命中 ccache 后 Python 编译显著加速.
+#   - apt 包缓存由 Docker BuildKit 的 --mount=type=cache 自动管理,
+#     缓存在 buildkit 端(~/.cache/buildkit/), 多次构建间复用, 无需本脚本处理.
+#   - 每次构建都会做全量编译.
 
 cleanup() {
   rm -rf devinstaller
@@ -17,8 +16,13 @@ if [[ -d devinstaller ]]; then
 fi
 cp -r ../devinstaller ./devinstaller
 
+IMAGE_NAME="liuwenru/ubuntu_dev"
+BUILD_DATE="$(date +%Y%m%d-%H%M)"
+
 if [[ $(uname -m) == "x86_64" ]]; then
-  docker build --network=host -f Dockerfile-x86_64 -t liuwenru/ubuntu_dev:$(uname -m) .
+  docker build --network=host -f Dockerfile-x86_64 \
+    -t "${IMAGE_NAME}:x86_64-${BUILD_DATE}" .
 elif [[ $(uname -m) == "aarch64" ]]; then
-  docker build --network=host -f Dockerfile-aarch64 -t liuwenru/ubuntu_dev:$(uname -m) .
+  docker build --network=host -f Dockerfile-aarch64 \
+    -t "${IMAGE_NAME}:aarch64-${BUILD_DATE}" .
 fi

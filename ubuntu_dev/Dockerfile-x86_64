@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
   build-essential gdb iproute2 libcurl4-openssl-dev gettext \
   autotools-dev autoconf automake unzip openssh-server git bsdextrautils \
-  ccache mold && \
+  mold && \
   echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8 && \
   rm -rf /var/lib/apt/lists/*
 
@@ -35,14 +35,6 @@ RUN mkdir /root/.vnc && \
   x11vnc -storepasswd "p@ssw0rd" /root/.vnc/passwd
 
 ENV DISPLAY=":1"
-
-# ccache + mold 全局生效
-ENV CC="ccache gcc" \
-    CXX="ccache g++" \
-    CCACHE_DIR=/root/.ccache \
-    CCACHE_SLOPPINESS="time_macros,include_file_mtime,file_macro,locale,clang_index_store" \
-    CCACHE_BASEDIR=/tmp
-ENV PATH=/usr/libexec/ccache:$PATH
 
 ###############################    Devtools Env    ###############################
 
@@ -81,9 +73,7 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 
-RUN --mount=type=cache,target=/root/.ccache,sharing=locked \
-  rm -rf /opt/python* 2>/dev/null || true && \
-  ccache -M 20G && \
+RUN rm -rf /opt/python* 2>/dev/null || true && \
   bash /opt/devinstaller/pyinstaller.sh
 
 

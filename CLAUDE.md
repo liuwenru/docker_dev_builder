@@ -12,15 +12,22 @@ Docker-based development environment images for VSCode Remote-SSH development. E
 # Setup buildx builder (one-time)
 docker buildx create --use --name mybuilder --driver-opt network=host --buildkitd-flags '--allow-insecure-entitlement network.host'
 
-# Build centos7 dev image
-docker buildx build --no-cache --network=host --platform linux/amd64 -t liuwenru/centos_dev:x86_64 -f centos7_dev/Dockerfile-x86_64 . --load --progress=plain
-docker buildx build --no-cache --network=host --platform linux/arm64 -t liuwenru/centos_dev:aarch64 -f centos7_dev/Dockerfile-aarch64 . --load --progress=plain
+# Build centos7 dev image (tag includes build date YYYYMMDD-HHMM, host local time)
+docker buildx build --no-cache --network=host --platform linux/amd64 \
+  -t liuwenru/centos_dev:x86_64-$(date +%Y%m%d-%H%M) \
+  -f centos7_dev/Dockerfile-x86_64 . --load --progress=plain
+docker buildx build --no-cache --network=host --platform linux/arm64 \
+  -t liuwenru/centos_dev:aarch64-$(date +%Y%m%d-%H%M) \
+  -f centos7_dev/Dockerfile-aarch64 . --load --progress=plain
 
 # Build using convenience script (fedora/rockylinux/ubuntu)
 cd fedora_dev && ./build.sh
 cd rockylinux_dev && ./build.sh
 cd ubuntu_dev && ./build.sh
 ```
+
+说明：所有 `build.sh` 内部都会在 tag 后追加 `$(date +%Y%m%d-%H%M)`（宿主机本地时间），
+形如 `liuwenru/<name>_dev:<arch>-20260707-1830`，便于区分多次构建产物。
 
 ## Architecture
 

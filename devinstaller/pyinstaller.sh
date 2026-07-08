@@ -5,11 +5,7 @@
 #       install_python 3.12.11
 #       install_python 3.13.5
 # ============================  ================================
-# set -euo pipefail
-
-# ---------- 并行构建配置 ----------
-PARALLEL_JOBS="${PARALLEL_JOBS:-2}"
-PYTHON_INSTALL_LOG_DIR="${PYTHON_INSTALL_LOG_DIR:-/tmp}"
+set -euo pipefail
 
 # ---------- 支持的版本 ----------
 PYTHON_VERSIONS=("3.12.11" "3.13.5" "3.14.6")
@@ -18,6 +14,10 @@ declare -A PYTHON_TARBALL_URLS=(
   ["3.13.5"]="https://fdoc.epoint.com.cn:3366/Aibuild/Python-3.13.5.tgz"
   ["3.14.6"]="https://fdoc.epoint.com.cn:3366/Aibuild/Python-3.14.6.tgz"
 )
+
+# ---------- 并行构建配置 ----------
+PARALLEL_JOBS="${PARALLEL_JOBS:-$(( $(nproc) < ${#PYTHON_VERSIONS[@]} ? $(nproc) : ${#PYTHON_VERSIONS[@]} ))}"
+PYTHON_INSTALL_LOG_DIR="${PYTHON_INSTALL_LOG_DIR:-/tmp}"
 
 # ---------- 工具函数 ----------
 _log() { echo ">>> $*"; }
@@ -50,27 +50,12 @@ install_python() {
   jobs=$(( $(nproc) / PARALLEL_JOBS ))
   (( jobs < 1 )) && jobs=1
   tarball="${build_dir}/python.tgz"
-  local max_age_days="${PYTHON_MAX_BUILD_AGE_DAYS:-7}"
-  local ts_file="${prefix}/.build_timestamp"
 
   _check_env
 
-  # 已装则按时间戳判断: < max_age_days 跳过, 否则强制重编
-  if [[ -x "${prefix}/bin/python${short_ver}" ]]; then
-    if [[ -f "${ts_file}" ]]; then
-      local build_time now age_days
-      build_time="$(stat -c %Y "${ts_file}" 2>/dev/null || echo 0)"
-      now="$(date +%s)"
-      age_days=$(( (now - build_time) / 86400 ))
-      if (( age_days < max_age_days )); then
-        _log "${version} 已安装, 构建于 ${age_days} 天前 (<${max_age_days}), 跳过"
-        "${prefix}/bin/python${short_ver}" --version
-        return 0
-      fi
-      _log "${version} 已 ${age_days} 天未更新 (>=${max_age_days}), 强制重编"
-    else
-      _log "${version} 已安装但无时间戳, 强制重编"
-    fi
+  # 强制重编: 永远清理旧 prefix, 不做时间戳判断
+  if [[ -d "${prefix}" ]]; then
+    _log "删除旧的 ${prefix}, 强制重编 ${version}"
     rm -rf "${prefix}"
   fi
 
@@ -90,8 +75,6 @@ install_python() {
 
   # 2. 配置
   _log "./configure (prefix=${prefix})"
-  export CFLAGS="-O3 -flto=auto -fno-fat-lto-objects"
-  export LDFLAGS="-flto=auto -fuse-ld=mold"
   ./configure \
     --prefix="${prefix}" \
     --enable-optimizations \
@@ -106,9 +89,6 @@ install_python() {
   # 4. 安装
   _log "make altinstall"
   make altinstall
-
-  # 4.1 写入构建时间戳
-  date +%s > "${ts_file}"
 
   # 5. 注册动态库
   _log "注册 ${prefix}/lib 到 ldconfig"
@@ -181,14 +161,33 @@ install_all_pythons() {
   fi
 }
 
+# ---------- uv 安装 (带重试) ----------
+_install_uv_with_retry() {
+  export 
+  local max_attempts=3
+  local attempt=1
+  while (( attempt <= max_attempts )); do
+    _log "下载并安装 uv (第 ${attempt}/${max_attempts} 次): https://astral.sh/uv/install.sh"
+    if wget --no-check-certificate  -qO- https://astral.sh/uv/install.sh | sh; then
+      _log "uv 安装完成"
+      return 0
+    fi
+    _log "uv 安装失败, 准备重试..."
+    attempt=$((attempt + 1))
+    sleep 5
+  done
+  _die "uv 下载安装失败, 已重试 ${max_attempts} 次"
+}
+
 # ---------- 直接执行入口 ----------
 # 如果是 source 进来, 不会执行下面; 直接跑脚本则装所有版本
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  _install_uv_with_retry
   if [[ $# -eq 0 ]]; then
     install_all_pythons
   else
     install_python "$1"
   fi
-fi
 
-wget -qO- https://astral.sh/uv/install.sh | sh
+  
+fi

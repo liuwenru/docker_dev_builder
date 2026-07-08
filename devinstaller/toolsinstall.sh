@@ -137,38 +137,45 @@ if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
 if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
 if [[ ! -f /usr/bin/busybox ]]; then downloader /usr/bin/busybox https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/busybox/busybox_$(uname -m) && chmod +x /usr/bin/busybox; fi
 if [[ -f /usr/bin/busybox ]]; then chmod +x /usr/bin/busybox && alias tar='busybox tar' && alias unzip='busybox unzip'; fi
-downloader /tmp/tools.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/$(uname -m)_static_tools.tar.gz && tar -zxvf /tmp/tools.tar.gz -C /usr/local/bin && rm -rf /tmp/tools.tar.gz
+downloader /tmp/tools.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/static_tools/$(uname -m)_static_tools.tar.gz && tar -zxvf /tmp/tools.tar.gz -C /usr/local/bin && rm -rf /tmp/tools.tar.gz
 
+
+if [[ $SHELL == "/bin/bash" ]];then set +o history; fi
 if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
 if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
-[[ -f /usr/bin/busybox ]] && {
-  alias tar='/usr/bin/busybox tar'
-  alias unzip='/usr/bin/busybox unzip'
-}
-case "$(uname -m)" in x86_64) A=x86_64 ;; aarch64 | arm64) A=aarch64 ;; *) A=skip ;; esac
+[[ -f /usr/bin/busybox ]] && { alias tar='/usr/bin/busybox tar'; alias unzip='/usr/bin/busybox unzip'; }
+case "$(uname -m)" in x86_64) A=x86_64 ;; aarch64|arm64) A=aarch64 ;; *) A=skip ;; esac
 T=/tmp/.xt_$$ && mkdir -p "$T" && cd "$T"
 case "$A" in
-x86_64)
-  downloader rg.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/ripgrep/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz'
-  downloader rc.zip 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rclone/rclone-v1.70.3-linux-amd64.zip'
-  downloader du.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/dust/dust-v1.2.4-x86_64-unknown-linux-musl.tar.gz'
-  downloader sf.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/sshfs/sshfs-tools-x86_64.tar.gz'
-  downloader q.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/q/q_0.19.11_linux_amd64.tar.gz'
-  downloader rn.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rustnet/rustnet-v1.4.0-x86_64-unknown-linux-musl.tar.gz'
-  ;;
-aarch64)
-  downloader rg.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/ripgrep/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz'
-  downloader rc.zip 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rclone/rclone-v1.70.3-linux-arm64.zip'
-  downloader du.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/dust/dust-v1.2.4-aarch64-unknown-linux-musl.tar.gz'
-  downloader sf.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/sshfs/sshfs-tools-aarch64.tar.gz'
-  downloader q.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/q/q_0.19.11_linux_arm64.tar.gz'
-  downloader rn.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rustnet/rustnet-v1.4.0-aarch64-unknown-linux-musl.tar.gz'
-  ;;
+  x86_64)
+    downloader rg.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/ripgrep/ripgrep-15.1.0-x86_64-unknown-linux-musl.tar.gz'
+    downloader rc.zip 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rclone/rclone-v1.70.3-linux-amd64.zip'
+    downloader du.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/dust/dust-v1.2.4-x86_64-unknown-linux-musl.tar.gz'
+    downloader sf.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/sshfs/sshfs-tools-x86_64.tar.gz'
+    downloader q.tgz  'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/q/q_0.19.11_linux_amd64.tar.gz'
+    downloader rn.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rustnet/rustnet-v1.4.0-x86_64-unknown-linux-musl.tar.gz'
+    downloader s2.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/s2sx/s2-linux_amd64.tar.gz'
+    downloader jq 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/clieditortools/jq-linux-amd64'
+    downloader yq.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/clieditortools/yq_linux_amd64.tar.gz' ;;
+  aarch64)
+    downloader rg.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/ripgrep/ripgrep-15.1.0-aarch64-unknown-linux-gnu.tar.gz'
+    downloader rc.zip 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rclone/rclone-v1.70.3-linux-arm64.zip'
+    downloader du.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/dust/dust-v1.2.4-aarch64-unknown-linux-musl.tar.gz'
+    downloader sf.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/sshfs/sshfs-tools-aarch64.tar.gz'
+    downloader q.tgz  'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/q/q_0.19.11_linux_arm64.tar.gz'
+    downloader rn.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/rustnet/rustnet-v1.4.0-aarch64-unknown-linux-musl.tar.gz'
+    downloader s2.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/s2sx/s2-linux_arm64.tar.gz'
+    downloader jq 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/clieditortools/jq-linux-arm64'
+    downloader yq.tgz 'https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/clieditortools/yq_linux_arm64.tar.gz' ;;
 esac
-[[ -f rg.tgz ]] && tar -xzf rg.tgz && find . -type f -name rg -exec install -m 0755 {} /usr/local/bin/rg \;
-[[ -f rc.zip ]] && unzip -q rc.zip && find . -type f -name rclone -exec install -m 0755 {} /usr/local/bin/rclone \;
-[[ -f du.tgz ]] && tar -xzf du.tgz && find . -type f -name dust -exec install -m 0755 {} /usr/local/bin/dust \;
+[[ -f rg.tgz ]] && tar -xzf rg.tgz && find . -type f -name rg       -exec install -m 0755 {} /usr/local/bin/rg \;
+[[ -f rc.zip ]] && unzip -q rc.zip && find . -type f -name rclone   -exec install -m 0755 {} /usr/local/bin/rclone \;
+[[ -f du.tgz ]] && tar -xzf du.tgz && find . -type f -name dust     -exec install -m 0755 {} /usr/local/bin/dust \;
 [[ -f sf.tgz ]] && tar -xzf sf.tgz && for b in sshfs fusermount3 mount.fuse3; do install -m 0755 sshfs-tools-*/$b /usr/local/bin/ 2>/dev/null; done
-[[ -f q.tgz ]] && tar -xzf q.tgz && find . -type f -name q -exec install -m 0755 {} /usr/local/bin/q \;
-[[ -f rn.tgz ]] && tar -xzf rn.tgz && find . -type f -name rustnet -exec install -m 0755 {} /usr/local/bin/rustnet \;
+[[ -f q.tgz  ]] && tar -xzf q.tgz  && find . -type f -name q         -exec install -m 0755 {} /usr/local/bin/q \;
+[[ -f rn.tgz ]] && tar -xzf rn.tgz && find . -type f -name rustnet   -exec install -m 0755 {} /usr/local/bin/rustnet \;
+[[ -f s2.tgz ]] && tar -xzf s2.tgz && for b in s2c s2d s2sx; do install -m 0755 s2/$b /usr/local/bin/ 2>/dev/null; done
+[[ -f jq ]] && install -m 0755 jq /usr/local/bin/jq
+[[ -f yq.tgz ]] && tar -xzf yq.tgz && find . -type f -name 'yq_linux_*' -exec install -m 0755 {} /usr/local/bin/yq \;
 cd ~ && rm -rf "$T"
+if [[ $SHELL == "/bin/bash" ]];then set -o history; fi
