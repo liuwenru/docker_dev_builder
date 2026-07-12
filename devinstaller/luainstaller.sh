@@ -18,15 +18,15 @@ if [[ "$ID" == "ubuntu" ]]; then
 
 elif command -v dnf >/dev/null 2>&1; then
   if [[ "$ID" == "fedora" ]]; then
-    dnf -y install \
+    dnf -y --setopt=keepcache=True install \
       ca-certificates curl gcc glibc-devel make readline-devel dirmngr gnupg2 unzip
   else
-    dnf -y --allowerasing install \
+    dnf -y --setopt=keepcache=True --allowerasing install \
       ca-certificates curl gcc glibc-devel make readline-devel dirmngr gnupg2 unzip
   fi
 
 else
-  yum -y --allowerasing install \
+  yum -y --setopt=keepcache=1 --allowerasing install \
     ca-certificates curl gcc glibc-devel make readline-devel dirmngr gnupg2 unzip
 fi
 

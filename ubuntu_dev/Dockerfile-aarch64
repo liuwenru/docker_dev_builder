@@ -6,16 +6,16 @@ ENV TZ=Asia/Shanghai
 ENV LANG=en_US.utf8
 ENV LC_ALL=en_US.utf-8
 
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=ubuntu-aarch64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
+  rm -f /etc/apt/apt.conf.d/docker-clean && \
   apt-get update && \
   apt-get install -y --no-install-recommends \
   locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
   build-essential gdb iproute2 libcurl4-openssl-dev gettext \
   autotools-dev autoconf automake unzip openssh-server git bsdextrautils \
   mold && \
-  echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8 && \
-  rm -rf /var/lib/apt/lists/*
+  echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8
 
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
   echo 'root:liuwenru' | chpasswd && \
@@ -26,24 +26,36 @@ ENV NOTVISIBLE="in users profile"
 
 ###############################    Devtools Env    ###############################
 
-COPY devinstaller /opt/devinstaller
-
-RUN bash /opt/devinstaller/toolsinstall.sh
+FROM base AS toolsdev
+COPY devinstaller/toolsinstall.sh /opt/devinstaller/toolsinstall.sh
+COPY devinstaller/bin/entrypoint.sh devinstaller/bin/tini-static-arm64 /opt/devinstaller/bin/
+RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=ubuntu-aarch64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
+  bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
 
 
+FROM toolsdev AS cdev
+COPY devinstaller/cinstall.sh /opt/devinstaller/cinstall.sh
 RUN bash /opt/devinstaller/cinstall.sh
 ENV PATH=/usr/local/cmake/bin:/usr/local/ctags/bin:$PATH
 
-RUN bash /opt/devinstaller/luainstaller.sh
+COPY devinstaller/luainstaller.sh /opt/devinstaller/luainstaller.sh
+RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=ubuntu-aarch64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
+  bash /opt/devinstaller/luainstaller.sh
 
 
+FROM cdev AS golangdev
 ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.io,direct
 ENV GOPATH=/opt/goworkspace
 ENV PATH=/opt/go/bin:$GOPATH/bin:$PATH
 
-RUN bash /opt/devinstaller/golanginstaller.sh
+COPY devinstaller/golanginstaller.sh /opt/devinstaller/golanginstaller.sh
+RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=ubuntu-aarch64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
+  bash /opt/devinstaller/golanginstaller.sh
 
 RUN go install github.com/ramya-rao-a/go-outline@latest && \
   go install github.com/cweill/gotests/gotests@latest && \
@@ -58,19 +70,24 @@ RUN go install github.com/ramya-rao-a/go-outline@latest && \
   go install mvdan.cc/sh/v3/cmd/shfmt@latest
 
 
-RUN bash /opt/devinstaller/nodejsinstaller.sh
-
-
+FROM golangdev AS pydev
+COPY devinstaller/pyinstaller.sh /opt/devinstaller/pyinstaller.sh
 RUN rm -rf /opt/python* 2>/dev/null || true && \
   bash /opt/devinstaller/pyinstaller.sh
 
 
+FROM pydev AS javadev
+COPY devinstaller/javainstaller.sh /opt/devinstaller/javainstaller.sh
 RUN bash /opt/devinstaller/javainstaller.sh
 
 ENV JAVA_HOME=/usr/local/jdk
 ENV ANT_HOME=/usr/local/ant
 ENV MAVEN_HOME=/usr/local/maven
 ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
+
+FROM javadev AS nodedev
+COPY devinstaller/nodejsinstaller.sh /opt/devinstaller/nodejsinstaller.sh
+RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 
 # RUN bash /opt/devinstaller/download-vs-code.sh "linux" "arm64" --use-commit f6cfa2ea2403534de03f069bdf160d06451ed282
@@ -79,10 +96,12 @@ ENV PATH=$JAVA_HOME/bin:$ANT_HOME/bin:$MAVEN_HOME/bin:$PATH
 #   ~/.vscode-server/bin/*/bin/code-server --accept-server-license-terms --force --install-extension $ext; \
 #   done
 
-RUN rm -rf /tmp/* /var/cache/apt/* /var/lib/apt/lists/*
+FROM nodedev AS final
+COPY devinstaller /opt/devinstaller
+RUN rm -rf /tmp/*
 RUN chsh -s /usr/bin/bash
 
-COPY start.sh /start.sh
+COPY ubuntu_dev/start.sh /start.sh
 RUN chmod +x /start.sh /tini
 
 ENTRYPOINT ["/tini", "-g", "--","/entrypoint.sh"]

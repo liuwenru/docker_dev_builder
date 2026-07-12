@@ -13,9 +13,9 @@ rm -rf /tmp/golang.tar.gz
 if grep -qi ubuntu /etc/os-release; then
   apt-get install -y --no-install-recommends bison git
 elif command -v dnf >/dev/null 2>&1; then
-  dnf -y install bison git 
+  dnf -y --setopt=keepcache=True install bison git
 else
-  yum -y install bison git 
+  yum -y --setopt=keepcache=1 install bison git
 fi
 
 bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)

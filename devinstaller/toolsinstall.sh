@@ -16,9 +16,9 @@ chmod +x /entrypoint.sh
 if grep -qi ubuntu /etc/os-release; then
   apt-get update && apt-get install -y openssh-server openssh-client sudo systemd sysvinit-utils net-tools iproute2 iputils-ping iptables vim
 elif command -v dnf >/dev/null 2>&1; then
-  dnf -y install openssh-server openssh-clients sudo systemd initscripts net-tools iproute iputils iptables vim
+  dnf -y --setopt=keepcache=True install openssh-server openssh-clients sudo systemd initscripts net-tools iproute iputils iptables vim
 else
-  yum -y install openssh-server openssh-clients sudo systemd initscripts net-tools iproute iputils iptables vim
+  yum -y --setopt=keepcache=1 install openssh-server openssh-clients sudo systemd initscripts net-tools iproute iputils iptables vim
 fi
 
 # bash tools
