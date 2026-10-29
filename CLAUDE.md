@@ -27,8 +27,8 @@ docker buildx build --no-cache --network=host --platform linux/arm64 \
 ./build_ubuntu.sh
 ```
 
-说明：所有 `build_*.sh` 内部都会在 tag 后追加 `$(date +%Y%m%d-%H%M)`（宿主机本地时间），
-形如 `liuwenru/<name>_dev:<arch>-20260707-1830`，便于区分多次构建产物。
+说明：所有 `build_*.sh` 的 tag 为 `<arch>-$(date +%Y%m%d%H%M)-$(git rev-parse --short HEAD)`（宿主机本地时间 + 当前提交短 id），
+形如 `docker.io/liuwenru/<name>_dev:x86_64-202610300549-8308a41`，便于区分多次构建产物并对应到代码版本。
 
 ## Architecture
 
