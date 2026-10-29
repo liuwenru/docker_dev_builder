@@ -50,7 +50,8 @@ RUN --mount=type=cache,id=centos7-x86_64-yum,target=/var/cache/yum,sharing=locke
   bash /opt/devinstaller/luainstaller.sh
 
 FROM cdev AS golangdev
-ENV PATH=/opt/go/bin:$PATH
+ENV GOPATH=/opt/goworkspace
+ENV PATH=/opt/go/bin:$GOPATH/bin:$PATH
 
 COPY devinstaller/golanginstaller.sh /opt/devinstaller/golanginstaller.sh
 RUN --mount=type=cache,id=centos7-x86_64-yum,target=/var/cache/yum,sharing=locked \

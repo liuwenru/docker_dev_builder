@@ -20,18 +20,19 @@ docker buildx build --no-cache --network=host --platform linux/arm64 \
   -t liuwenru/centos_dev:aarch64-$(date +%Y%m%d-%H%M) \
   -f centos7_dev/Dockerfile-aarch64 . --load --progress=plain
 
-# Build using convenience script (fedora/rockylinux/ubuntu)
-cd fedora_dev && ./build.sh
-cd rockylinux_dev && ./build.sh
-cd ubuntu_dev && ./build.sh
+# Build using convenience scripts in repo root (auto-detects host arch, optional --no-cache)
+./build_centos7.sh
+./build_fedora.sh
+./build_rockylinux.sh
+./build_ubuntu.sh
 ```
 
-说明：所有 `build.sh` 内部都会在 tag 后追加 `$(date +%Y%m%d-%H%M)`（宿主机本地时间），
+说明：所有 `build_*.sh` 内部都会在 tag 后追加 `$(date +%Y%m%d-%H%M)`（宿主机本地时间），
 形如 `liuwenru/<name>_dev:<arch>-20260707-1830`，便于区分多次构建产物。
 
 ## Architecture
 
-- **Multi-stage Dockerfiles**: Base → cdev (C/C++ tools) → golangdev → nodedev → pydev → javadev
+- **Multi-stage Dockerfiles**: base → toolsdev → cdev (C/C++ tools) → golangdev → pydev → javadev → nodedev → final（CentOS 7 aarch64 没有 pydev，Rocky Linux 在 nodedev 后多一个 dockerdev）
 - **devinstaller/**: Shared installer scripts copied into images at build time
   - `cinstall.sh` - C/C++ development tools
   - `golanginstaller.sh` - Go toolchain

@@ -89,6 +89,7 @@ install_python() {
   # 4. 安装
   _log "make altinstall"
   make altinstall
+  cd / && rm -rf "${build_dir}"
 
   # 5. 注册动态库
   _log "注册 ${prefix}/lib 到 ldconfig"
@@ -113,6 +114,8 @@ install_python() {
 
 # ---------- 单版本带前缀输出 + 日志落盘 ----------
 _install_one_with_prefix() {
+  # 后台任务(&)默认忽略 SIGINT，会导致 PGO 阶段的 test_generators 失败
+  trap - INT QUIT
   local v="$1"
   local log="${PYTHON_INSTALL_LOG_DIR}/pyinstall-${v}.log"
   : > "${log}"
@@ -163,7 +166,6 @@ install_all_pythons() {
 
 # ---------- uv 安装 (带重试) ----------
 _install_uv_with_retry() {
-  export 
   local max_attempts=3
   local attempt=1
   while (( attempt <= max_attempts )); do

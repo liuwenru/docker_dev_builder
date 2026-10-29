@@ -9,6 +9,9 @@ ENV LC_ALL=en_US.utf-8
 RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,id=ubuntu-aarch64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
   rm -f /etc/apt/apt.conf.d/docker-clean && \
+  for f in /etc/apt/sources.list /etc/apt/sources.list.d/ubuntu.sources; do \
+    [ -f "$f" ] && sed -i 's@//ports.ubuntu.com/@//mirrors.aliyun.com/@g' "$f"; \
+  done; \
   apt-get update && \
   apt-get install -y --no-install-recommends \
   locales gcc g++ libncurses-dev vim net-tools curl iftop htop \
@@ -18,7 +21,6 @@ RUN --mount=type=cache,id=ubuntu-aarch64-apt-cache,target=/var/cache/apt,sharing
   echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen en_US.UTF-8
 
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-  echo 'root:liuwenru' | chpasswd && \
   sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
   echo "export VISIBLE=now" >> /etc/profile
 

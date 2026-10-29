@@ -33,7 +33,7 @@ if [[ $(uname -m) == "x86_64" ]]; then
 elif [[ $(uname -m) == "aarch64" ]]; then
   downloader /tmp/starship.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/starship/starship-aarch64-unknown-linux-musl.tar.gz
 fi
-tar -zxvf /tmp/starship.tar.gz -C /usr/bin/
+tar -zxvf /tmp/starship.tar.gz -C /usr/bin/ && rm -rf /tmp/starship.tar.gz
 echo 'eval "$(starship init bash)"' >>~/.bashrc
 mkdir -p ~/.config && cat <<'EOF' >~/.config/starship.toml
 # ~/.config/starship.toml
@@ -126,6 +126,7 @@ curl -k -L -o /tmp/git.tar.gz https://mirrors.edge.kernel.org/pub/software/scm/g
 
 mkdir /tmp/git && cd /tmp/git && tar --strip-components=1 -zxf /tmp/git.tar.gz -C /tmp/git
 ./configure --prefix=/opt/git2.44 && make -j$(nproc) && make install && ln -s /opt/git2.44 /usr/local/git
+cd / && rm -rf /tmp/git /tmp/git.tar.gz
 curl -k -L -o /root/.gitconfig https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitconfig
 curl -k -L -o /root/.gitignore_global https://raw.githubusercontent.com/liuwenru/mymacprofile/master/git/gitignore_global
 

@@ -110,7 +110,6 @@
 
   "redhat.telemetry.enabled": false,
   "Lua.telemetry.enable": false,
-  "sourcegraph.accessToken": "4851cc896ed197eac85e71af9483bf9a7d698ad4",
   "[python]": {
     "editor.defaultFormatter": "ms-python.python"
   },

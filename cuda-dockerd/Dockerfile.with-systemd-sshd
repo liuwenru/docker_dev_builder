@@ -16,7 +16,6 @@ RUN sed -i 's/#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config && \
   echo "UseDNS no" >> /etc/ssh/sshd_config
 
 
-RUN echo "root:91U2m0ESoERW" | chpasswd
 
 
 

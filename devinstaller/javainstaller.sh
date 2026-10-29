@@ -11,7 +11,8 @@ x86_64)
   ;;
 aarch64)
   JDK8_URL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/OpenJDK8U-jdk_aarch64_linux_hotspot_8u312b07.tar.gz"
-  JDK11_URL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/OpenJDK11U-jdk_arm_linux_hotspot_11.0.31_11.tar.gz"
+  # 镜像站上 jdk_arm 是 32 位 armhf 的包，aarch64 只有 11.0.13
+  JDK11_URL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/.openjdk11/OpenJDK11U-jdk_aarch64_linux_hotspot_11.0.13_8.tar.gz"
   JDK17_URL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/.openjdk17/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.10_7.tar.gz"
   JDK21_URL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK/OpenJDK21U-jdk_aarch64_linux_hotspot_21.0.11_10.tar.gz"
   ;;
@@ -49,8 +50,6 @@ install_jdk 21 "${JDK21_URL}"
 echo "All JDKs installed successfully."
 
 ln -s /opt/openjdk21 /usr/local/jdk
-
-curl -sL https://github.com/Jabba-Team/jabba/raw/main/install.sh
 
 antdownloadurl="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/apache-ant-1.10.12-bin.tar.gz"
 curl -k -L -o /tmp/ant.tar.gz ${antdownloadurl}
