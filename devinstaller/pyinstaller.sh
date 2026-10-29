@@ -64,6 +64,10 @@ case ":\${PATH}:" in
 esac
 EOF
 
+# 非交互 bash（docker run IMG bash -c ...）通过 BASH_ENV=/etc/devenv.sh 加载
+devenv_line='[ -f /etc/profile.d/uv-python.sh ] && . /etc/profile.d/uv-python.sh'
+grep -qxF "$devenv_line" /etc/devenv.sh 2>/dev/null || echo "$devenv_line" >>/etc/devenv.sh
+
 for v in "${PYTHON_VERSIONS[@]}"; do
   "/usr/local/bin/python${v}" --version
 done

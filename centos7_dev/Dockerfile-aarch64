@@ -92,6 +92,9 @@ COPY devinstaller/nodejsinstaller.sh /opt/devinstaller/nodejsinstaller.sh
 RUN bash /opt/devinstaller/nodejsinstaller.sh
 
 FROM nodedev AS final
+# 非交互 bash（docker run IMG bash -c ...）加载各 installer 写入 /etc/devenv.sh 的开发环境
+COPY devinstaller/bin/bash_env.sh /etc/bash_env.sh
+ENV BASH_ENV=/etc/bash_env.sh
 COPY devinstaller /opt/devinstaller
 RUN rm -rf /tmp/*
 RUN chsh -s /usr/bin/bash
@@ -99,5 +102,5 @@ RUN chsh -s /usr/bin/bash
 COPY centos7_dev/start.sh /start.sh
 RUN chmod +x /start.sh /tini
 
-ENTRYPOINT ["/tini", "-g", "--"]
+ENTRYPOINT ["/tini", "-g", "--","/entrypoint.sh"]
 CMD ["/bin/bash", "/start.sh"]

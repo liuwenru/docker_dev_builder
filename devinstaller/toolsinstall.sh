@@ -322,3 +322,39 @@ esac
 [[ -f yq.tgz ]] && tar -xzf yq.tgz && find . -type f -name 'yq_linux_*' -exec install -m 0755 {} /usr/local/bin/yq \;
 cd ~ && rm -rf "$T"
 if [[ $SHELL == "/bin/bash" ]]; then set -o history; fi
+
+#  install bash completions
+
+if [[ $SHELL == "/bin/bash" ]]; then
+  set +o history
+  shopt -s expand_aliases
+fi
+if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
+if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
+[[ -f /usr/bin/busybox ]] && {
+  alias tar='/usr/bin/busybox tar'
+  alias unzip='/usr/bin/busybox unzip'
+}
+BASEURL="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/"
+case "$(uname -m)" in x86_64) A=x86_64 ;; aarch64 | arm64) A=aarch64 ;; *) A=skip ;; esac
+T=$(mktemp -d /tmp/.xt_XXXXXX) && cd "$T"
+case "$A" in
+x86_64)
+  downloader bcom.tgz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/bash-completion-lite/bash-completion-lite.tar.gz
+  ;;
+aarch64)
+  downloader bcom.tgz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/bash-completion-lite/bash-completion-lite.tar.gz
+  ;;
+esac
+[[ -f bcom.tgz ]] && rm -rf "$HOME/.local/share/bash-completion"
+mkdir -p "$HOME/.local/share/bash-completion"
+[[ -f bcom.tgz ]] && tar --strip-components=1 -xzf bcom.tgz -C $HOME/.local/share/bash-completion/
+cd ~ && rm -rf "$T"
+printf '\n'
+printf '\033[1;33m[ACTION]\033[0m 请执行以下命令，使补全功能在当前 Shell 中生效：\n\n'
+printf '  \033[1;36msource /root/.local/share/bash-completion/init.bash\033[0m\n\n'
+if [[ $SHELL == "/bin/bash" ]]; then set -o history; fi
+
+# 补全只对交互 shell 有用（init.bash 遇到非交互会直接 return），所以写 ~/.bashrc，不写 /etc/devenv.sh
+bashrc_line='[ -f /root/.local/share/bash-completion/init.bash ] && source /root/.local/share/bash-completion/init.bash'
+grep -qxF "$bashrc_line" ~/.bashrc 2>/dev/null || echo "$bashrc_line" >>~/.bashrc

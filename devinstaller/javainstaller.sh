@@ -16,6 +16,10 @@ if [ -z "$ARCH" ]; then echo "不支持的架构: $(uname -m)"; else
 fi
 [ -n "$BASH_VERSION" ] && set -o history
 
+# 非交互 bash（docker run IMG bash -c ...）通过 BASH_ENV=/etc/devenv.sh 加载
+devenv_line='[ -s "/root/.jabba/jabba.sh" ] && source "/root/.jabba/jabba.sh"'
+grep -qxF "$devenv_line" /etc/devenv.sh 2>/dev/null || echo "$devenv_line" >>/etc/devenv.sh
+
 # ---------- 用 jabba 从镜像站安装 JDK ----------
 JDK_BASEURL="https://fdoc.epoint.com.cn:3366/JDK/OpenJDK"
 case "$(uname -m)" in

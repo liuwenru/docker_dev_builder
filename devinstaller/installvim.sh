@@ -27,5 +27,9 @@ touch ~/.bashrc
 if ! grep -Fxq -- "$alias_line" ~/.bashrc; then
   printf '\n%s\n' "$alias_line" >>~/.bashrc
 fi
+# 非交互 bash（docker run IMG bash -c ...）通过 BASH_ENV=/etc/devenv.sh 加载，别名只在 bash -c 里打开
+for devenv_line in "$alias_line" '[ -n "${BASH_EXECUTION_STRING:-}" ] && shopt -s expand_aliases'; do
+  grep -qxF -- "$devenv_line" /etc/devenv.sh 2>/dev/null || echo "$devenv_line" >>/etc/devenv.sh
+done
 cd ~ && rm -rf "$T"
 if [[ -n "$BASH_VERSION" ]]; then set -o history; fi

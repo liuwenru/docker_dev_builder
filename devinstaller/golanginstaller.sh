@@ -21,3 +21,7 @@ fi
 bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
 source /root/.gvm/scripts/gvm
 gvm install go1.26.4 -B
+
+# 非交互 bash（docker run IMG bash -c ...）通过 BASH_ENV=/etc/devenv.sh 加载
+devenv_line='[[ -s "/root/.gvm/scripts/gvm" ]] && source "/root/.gvm/scripts/gvm"'
+grep -qxF "$devenv_line" /etc/devenv.sh 2>/dev/null || echo "$devenv_line" >>/etc/devenv.sh

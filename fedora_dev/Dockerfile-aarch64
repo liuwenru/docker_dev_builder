@@ -89,6 +89,9 @@ RUN bash /opt/devinstaller/nodejsinstaller.sh
 #     done
 
 FROM nodedev AS final
+# 非交互 bash（docker run IMG bash -c ...）加载各 installer 写入 /etc/devenv.sh 的开发环境
+COPY devinstaller/bin/bash_env.sh /etc/bash_env.sh
+ENV BASH_ENV=/etc/bash_env.sh
 COPY devinstaller /opt/devinstaller
 RUN rm -rf /tmp/*
 RUN chsh -s /usr/bin/bash

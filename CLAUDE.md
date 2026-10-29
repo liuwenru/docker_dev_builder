@@ -40,6 +40,9 @@ docker buildx build --no-cache --network=host --platform linux/arm64 \
   - `toolsinstall.sh` - Git,平时的开发工具
   - `download-vs-code.sh` - Downloads VSCode server with custom glibc patch support
 - **start.sh**: Entry point script in each distro folder
+- **/etc/devenv.sh**：非交互 bash 的环境（final 阶段 `ENV BASH_ENV=/etc/bash_env.sh`，这个包装脚本（`devinstaller/bin/bash_env.sh`）会临时关掉 `set -eu` 再 source 它；`/entrypoint.sh` 也会 source 它）。
+  没有单独的源文件，由各 installer 在往 `~/.bashrc` 写初始化代码的同时用 `grep -qxF ... || echo ... >>/etc/devenv.sh` 追加。
+  新增工具时同样处理；starship/atuin/bash-preexec 这类只对交互 shell 有用的不要写进去。
 - **cuda-dockerd/**: Separate CUDA-enabled image with systemd and SSH daemon for GPU workloads
 
 ## VSCode Integration
