@@ -73,6 +73,7 @@ RUN unset https_proxy && unset HTTPS_PROXY && \
 FROM golangdev AS pydev
 COPY devinstaller/pyinstaller.sh /opt/devinstaller/pyinstaller.sh
 RUN bash /opt/devinstaller/pyinstaller.sh
+ENV PATH=/usr/local/bin:$PATH
 
 FROM pydev AS javadev
 COPY devinstaller/javainstaller.sh /opt/devinstaller/javainstaller.sh

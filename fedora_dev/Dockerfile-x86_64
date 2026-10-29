@@ -65,6 +65,7 @@ FROM golangdev AS pydev
 COPY devinstaller/pyinstaller.sh /opt/devinstaller/pyinstaller.sh
 RUN rm -rf /opt/python* 2>/dev/null || true && \
   bash /opt/devinstaller/pyinstaller.sh
+ENV PATH=/usr/local/bin:$PATH
 
 
 FROM pydev AS javadev
