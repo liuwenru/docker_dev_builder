@@ -26,6 +26,8 @@ COPY devinstaller/bin/entrypoint.sh devinstaller/bin/tini-static-amd64 /opt/devi
 RUN --mount=type=cache,id=fedora-x86_64-dnf,target=/var/cache/dnf,sharing=locked \
     bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
+COPY devinstaller/installvim.sh /opt/devinstaller/installvim.sh
+RUN bash /opt/devinstaller/installvim.sh
 
 
 FROM toolsdev AS cdev

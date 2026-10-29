@@ -44,6 +44,8 @@ RUN --mount=type=cache,id=ubuntu-x86_64-apt-cache,target=/var/cache/apt,sharing=
   --mount=type=cache,id=ubuntu-x86_64-apt-lists,target=/var/lib/apt/lists,sharing=locked \
   bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
+COPY devinstaller/installvim.sh /opt/devinstaller/installvim.sh
+RUN bash /opt/devinstaller/installvim.sh
 
 
 FROM toolsdev AS cdev

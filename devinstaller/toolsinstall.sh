@@ -22,8 +22,8 @@ else
 fi
 
 # bash tools
-
 if [[ $SHELL == "/bin/bash" ]]; then set +o history; fi
+shopt -s expand_aliases
 if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
 if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
 if [[ ! -f /usr/bin/busybox ]]; then downloader /usr/bin/busybox https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/tools/busybox/busybox_$(uname -m) && chmod +x /usr/bin/busybox; fi
@@ -33,12 +33,11 @@ if [[ $(uname -m) == "x86_64" ]]; then
 elif [[ $(uname -m) == "aarch64" ]]; then
   downloader /tmp/starship.tar.gz https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/starship/starship-aarch64-unknown-linux-musl.tar.gz
 fi
-tar -zxvf /tmp/starship.tar.gz -C /usr/bin/ && rm -rf /tmp/starship.tar.gz
+tar -zxvf /tmp/starship.tar.gz -C /usr/bin/
 echo 'eval "$(starship init bash)"' >>~/.bashrc
 mkdir -p ~/.config && cat <<'EOF' >~/.config/starship.toml
 # ~/.config/starship.toml
 "$schema" = 'https://starship.rs/config-schema.json'
-
 # 自定义 prompt 格式，只保留需要的模块
 format = """
 [$username](bold yellow)[@](white)[$localip](bold cyan) \
@@ -55,10 +54,10 @@ format = '[$user]($style)'
 style_user = 'bold yellow'
 style_root = 'bold red'
 
-# 主机 IP 地址（本地 IP）
+# 主机 IP 地址（仅 IPv4 数字地址，不做 DNS 解析；用于标识当前登录的机器）
 [localip]
-ssh_only = false
 disabled = false
+ssh_only = false
 format = '[$localipv4]($style)'
 style = 'bold cyan'
 
@@ -68,11 +67,10 @@ format = '[$path]($style)[$read_only]($read_only_style) '
 style = 'bold blue'
 truncation_length = 3
 truncation_symbol = '…/'
-use_logical_path = false
 
-# 命令执行时间
+# 命令执行时间 - 优化：仅在 >= 2s 时显示，减少每次 prompt 的格式计算
 [cmd_duration]
-min_time = 0          # 所有命令都显示耗时（默认 2000ms 才显示）
+min_time = 2000       # 仅显示执行 ≥ 2s 的命令耗时（默认 2000ms）
 format = 'TOOK: [$duration]($style) '
 style = 'bold yellow'
 
@@ -91,6 +89,55 @@ disabled = true
 disabled = true
 
 [package]
+disabled = true
+
+# 进一步禁用：每个 prompt 都不需要扫描的开销模块
+[nodejs]
+disabled = true
+
+[python]
+disabled = true
+
+[java]
+disabled = true
+
+[ruby]
+disabled = true
+
+[rust]
+disabled = true
+
+[php]
+disabled = true
+
+[golang]
+disabled = true
+
+[nix_shell]
+disabled = true
+
+[aws]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[memory_usage]
+disabled = true
+
+[docker_context]
+disabled = true
+
+[kubernetes]
+disabled = true
+
+[terraform]
+disabled = true
+
+[conda]
+disabled = true
+
+[env_var]
 disabled = true
 EOF
 # if [[ $(uname -m) == "x86_64" ]];then
@@ -113,9 +160,102 @@ tar --strip-components=1 -zxvf /tmp/atuin.tar.gz -C /usr/bin/ atuin-$(uname -m)-
 downloader /tmp/bash-preexec.sh https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/devdownload/atuin/bash-preexec.sh && mv /tmp/bash-preexec.sh ~/.bash-preexec.sh && echo '[[ -f ~/.bash-preexec.sh ]] && source ~/.bash-preexec.sh' >>~/.bashrc && rm -rf /tmp/bash-preexec.sh
 echo 'eval "$(atuin init bash --disable-up-arrow --disable-ai)"' >>~/.bashrc
 mkdir -p ~/.config/atuin && cat <<'EOF' >~/.config/atuin/config.toml
+## atuin 配置
+
+## 关闭启动时的 update check（你不想看到升级提示，且当前 sync_address 是 localhost 根本走不通）
+update_check = false
+
+## sync_address 仍是 https://localhost（用户未配置远程同步服务器），所以 auto_sync 必须保持 false
 auto_sync = false
 sync_address = "https://localhost"
-enter_accept = false
+
+## Enter 直接执行选中的历史命令（与大部分人习惯一致；Tab 仍可编辑）
+enter_accept = true
+
+## 同步/网络超时调短，避免请求 localhost:443 时挂 5 秒
+network_connect_timeout = 2
+network_timeout = 5
+
+## SQLite 本地写超时（默认 5s）
+local_timeout = 5
+
+## TUI 更安静：Ctrl-R 弹出搜索面板时计时器不实时跳动、减少闪动
+prefers_reduced_motion = true
+
+## 时区（默认 local，可按需改为 "+8" 这种 UTC 偏移，让历史时间戳显示更稳）
+# timezone = "local"
+
+## 日期格式（us = MM/DD，uk = DD/MM）
+# dialect = "us"
+
+## 搜索模式（prefix | fulltext | fuzzy | skim），fuzzy 适合多数场景
+# search_mode = "fuzzy"
+
+## 默认过滤模式（global | host | session | session-preload | directory | workspace）
+## 多机用户建议 host；单机用户保持 global
+# filter_mode = "global"
+
+## 搜索 UI 风格（auto | full | compact）
+# style = "auto"
+
+## 长命令预览（避免被截断看不清）
+show_preview = true
+max_preview_height = 4
+
+## 在列表里显示数字快捷键（1-9 直接选中）
+show_numeric_shortcuts = true
+
+## Ctrl-R 搜索面板的列：时长 + 相对时间 + 主机 + 命令（多机场景下 host 列很有用）
+# columns = ["duration", "time", "host", "command"]
+
+## ---- 安全：黑名单正则（不会被写入 history）----
+## 默认已经过滤 AWS key / GitHub PAT / Slack token / Stripe key
+secrets_filter = true
+
+## 额外想过滤的（按需开启）
+# history_filter = [
+#   "^rm -rf /",
+#   "password\\s*=",
+#   "BEGIN .* PRIVATE KEY",
+# ]
+
+## ---- stats 统计：让 stats 子命令更有意义 ----
+[stats]
+## 这些命令的子命令会单独统计（apt install vs apt update）
+common_subcommands = [
+  "apt", "cargo", "dnf", "docker", "git", "go",
+  "kubectl", "npm", "pnpm", "podman", "systemctl",
+  "tmux", "yarn",
+]
+## 统计时剥掉的前缀
+common_prefix = ["sudo"]
+## 完全不计入统计
+ignored_commands = ["ls", "cd", "ll", "pwd", "exit"]
+
+## ---- 同步（当前未启用）----
+[sync]
+records = true
+
+## ---- 主题（可选）----
+[theme]
+# name = "autumn"
+
+## ---- 搜索过滤顺序（可选）----
+[search]
+## 默认 ["global", "host", "session", "session-preload", "workspace", "directory"]
+## 多机用户可改为 host 优先
+# filters = ["host", "global", "session", "session-preload", "directory"]
+
+[daemon]
+## 启用 daemon：每条命令回车时不再 fork atuin 进程，走 Unix socket IPC
+## 期望收益：单次 10-30ms → 1-3ms
+enabled = true
+autostart = true
+## daemon 周期同步频率（秒）；sync_address 是 localhost 时不会真正同步
+sync_frequency = 300
+socket_path = "~/.local/share/atuin/atuin.sock"
+pidfile_path = "~/.local/share/atuin/atuin-daemon.pid"
+
 EOF
 echo "alias ll='ls -lh'" >>~/.bashrc
 source ~/.bashrc

@@ -45,6 +45,8 @@ COPY devinstaller/bin/entrypoint.sh devinstaller/bin/tini-static-arm64 /opt/devi
 RUN --mount=type=cache,id=centos7-aarch64-yum,target=/var/cache/yum,sharing=locked \
   bash /opt/devinstaller/toolsinstall.sh
 ENV PATH=/usr/local/git/bin:$PATH
+COPY devinstaller/installvim.sh /opt/devinstaller/installvim.sh
+RUN bash /opt/devinstaller/installvim.sh
 
 FROM toolsdev AS cdev
 COPY devinstaller/cinstall.sh /opt/devinstaller/cinstall.sh

